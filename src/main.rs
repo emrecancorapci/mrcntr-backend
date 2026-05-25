@@ -18,7 +18,7 @@ async fn main() -> std::io::Result<()> {
     let ip = "127.0.0.1";
     let port = 8080;
 
-    println!("http://{}:{}", ip, port);
+    println!("App listening on http://{}:{}", ip, port);
 
     HttpServer::new(app).bind((ip, port))?.run().await
 }
