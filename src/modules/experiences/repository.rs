@@ -3,7 +3,7 @@ use diesel::{
 };
 
 use super::{Experience, NewExperience};
-use crate::{PooledConn, schema::experiences};
+use crate::{PooledConn, modules::experiences::models::UpdateExperience, schema::experiences};
 
 pub fn one(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
     experiences::table
@@ -28,7 +28,7 @@ pub fn insert(conn: &mut PooledConn, experience: NewExperience) -> Result<Experi
 pub fn update(
     conn: &mut PooledConn,
     id: &i32,
-    experience: NewExperience,
+    experience: UpdateExperience,
 ) -> Result<Option<Experience>, Error> {
     diesel::update(experiences::dsl::experiences.find(id))
         .set(experience)
