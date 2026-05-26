@@ -1,7 +1,6 @@
 mod handlers;
 mod models;
 mod repository;
-mod router;
 
+pub use handlers::{delete, insert, many, one, update};
 pub use models::{Experience, ExperienceTag, NewExperience};
-pub use router::routes;

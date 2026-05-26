@@ -8,6 +8,8 @@ pub mod modules {
     pub mod tags;
 }
 
+pub mod router;
+
 pub use config::db::DbPool;
 pub use config::db::PooledConn;
 pub use config::schema;
