@@ -2,8 +2,8 @@ use diesel::{
     ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper, result::Error,
 };
 
-use super::{Experience, NewExperience};
-use crate::{PooledConn, modules::experiences::models::UpdateExperience, schema::experiences};
+use super::{Experience, NewExperience, UpdateExperience};
+use crate::{PooledConn, schema::experiences};
 
 pub fn one(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
     experiences::table

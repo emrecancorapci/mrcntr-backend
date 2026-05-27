@@ -1,10 +1,9 @@
-use actix_web::{HttpResponse, Responder, delete, error::ErrorInternalServerError, get, patch, post, web};
-
-use super::repository;
-use crate::{
-    DbPool,
-    modules::experiences::{NewExperience, models::UpdateExperience},
+use actix_web::{
+    HttpResponse, Responder, delete, error::ErrorInternalServerError, get, patch, post, web,
 };
+
+use super::{NewExperience, UpdateExperience, repository};
+use crate::DbPool;
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> actix_web::Result<impl Responder> {
