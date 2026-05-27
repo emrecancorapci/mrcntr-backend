@@ -1,10 +1,12 @@
 -- Your SQL goes here
 CREATE TABLE experiences (
-    id SERIAL PRIMARY KEY,                -- Auto-incrementing ID
+    id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     company_name VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,            -- TEXT is better than VARCHAR if descriptions get long
+    description TEXT NOT NULL,
     location VARCHAR(255) NOT NULL,
-    start_date DATE NOT NULL,             -- Pro-tip: avoid using SQL keywords like 'start' or 'end' as column names!
-    end_date DATE                         -- Leave this nullable (no NOT NULL) for current jobs!
+    start_date DATE NOT NULL,
+    end_date DATE,
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
 );

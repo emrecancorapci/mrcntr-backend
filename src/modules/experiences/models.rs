@@ -1,7 +1,7 @@
 use crate::config::schema;
 
-use chrono::NaiveDate;
-use diesel::{Selectable, deserialize::Queryable, prelude::*};
+use chrono::{NaiveDate, NaiveDateTime};
+use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Selectable, Debug, Clone, Serialize)]
@@ -15,6 +15,8 @@ pub struct Experience {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable, Clone, Deserialize)]
@@ -26,6 +28,8 @@ pub struct NewExperience {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable, AsChangeset, Clone, Deserialize)]
@@ -37,14 +41,6 @@ pub struct UpdateExperience {
     pub location: Option<String>,
     pub start_date: Option<NaiveDate>,
     pub end_date: Option<NaiveDate>,
-}
-
-#[derive(Queryable, Selectable, Debug, Clone, Serialize)]
-#[diesel(table_name = schema::experience_tags)]
-#[diesel(belongs_to(Experience))]
-#[diesel(belongs_to(Tag))]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct ExperienceTag {
-    pub experience_id: i32,
-    pub tag_slug: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
