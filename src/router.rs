@@ -1,6 +1,6 @@
 use actix_web::{guard, web};
 
-use crate::modules::experiences;
+use crate::modules::{experiences, tags};
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     let v1 = web::scope("/v1");
@@ -8,17 +8,28 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     // Experiences
     let v1 = v1
         .service(
-                web::scope("/experiences")
-                    .service(experiences::many)
+            web::scope("/experiences")
+                .service(experiences::many)
                 .service(experiences::one),
         )
-                    .service(
+        .service(
             web::scope("/experiences")
-                            .guard(guard::Header("content-type", "json/application"))
-                            .service(experiences::insert)
-                            .service(experiences::update)
-                            .service(experiences::delete),
-    );
+                .guard(guard::Header("content-type", "json/application"))
+                .service(experiences::insert)
+                .service(experiences::update)
+                .service(experiences::delete),
+        );
+
+    // Tags
+    let v1 = v1
+        .service(web::scope("/tags").service(tags::many).service(tags::one))
+        .service(
+            web::scope("/tags")
+                .guard(guard::Header("content-type", "json/application"))
+                .service(tags::insert)
+                .service(tags::update)
+                .service(tags::delete),
+        );
 
     cfg.service(web::scope("/api").service(v1));
 }

@@ -1,8 +1,8 @@
 use crate::config::schema;
 use diesel::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize)]
+#[derive(Insertable, Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Tag {
@@ -10,9 +10,9 @@ pub struct Tag {
     pub title: String,
 }
 
-#[derive(Insertable, Debug, Clone)]
+#[derive(AsChangeset, Debug, Clone, Deserialize)]
 #[diesel(table_name = schema::tags)]
-pub struct NewTag<'a> {
-    pub slug: &'a str,
-    pub title: &'a str,
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct UpdateTag {
+    pub title: String,
 }
