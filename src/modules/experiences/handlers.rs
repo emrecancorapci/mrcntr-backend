@@ -18,7 +18,7 @@ pub async fn many(pool: web::Data<DbPool>) -> actix_web::Result<impl Responder> 
     Ok(HttpResponse::Ok().json(data))
 }
 
-#[get("/{experience_id}")]
+#[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
@@ -60,13 +60,14 @@ pub async fn insert(
     }
 }
 
-#[patch("")]
+#[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
+    path: web::Path<i32>,
     experience_json: web::Json<UpdateExperience>,
 ) -> actix_web::Result<impl Responder> {
     let experience = experience_json.into_inner();
-    let id = experience.id.clone();
+    let id = path.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
@@ -82,8 +83,7 @@ pub async fn update(
     }
 }
 
-
-#[delete("/{experience_id}")]
+#[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,

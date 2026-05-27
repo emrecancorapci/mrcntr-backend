@@ -31,7 +31,6 @@ pub struct NewExperience {
 #[derive(Insertable, AsChangeset, Clone, Deserialize)]
 #[diesel(table_name = schema::experiences)]
 pub struct UpdateExperience {
-    pub id: i32,
     pub title: Option<String>,
     pub company_name: Option<String>,
     pub description: Option<String>,
