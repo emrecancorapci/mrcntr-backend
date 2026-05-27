@@ -2,7 +2,7 @@ use actix_web::{App, HttpServer, web};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let pool = mrcntr::config::db::establish_connection();
+    let pool = mrcntr::establish_connection();
     let shared_pool = web::Data::new(pool);
 
     let app = move || {
