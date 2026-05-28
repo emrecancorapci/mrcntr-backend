@@ -1,6 +1,4 @@
--- Your SQL goes here
--- Your SQL goes here
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     slug VARCHAR(50) PRIMARY KEY,
     title VARCHAR(50) NOT NULL
 );

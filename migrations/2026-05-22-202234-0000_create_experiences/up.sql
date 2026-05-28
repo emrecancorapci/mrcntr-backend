@@ -1,5 +1,4 @@
--- Your SQL goes here
-CREATE TABLE experiences (
+CREATE TABLE IF NOT EXISTS experiences (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     company_name VARCHAR(255) NOT NULL,
