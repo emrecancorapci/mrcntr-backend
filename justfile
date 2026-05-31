@@ -4,5 +4,8 @@ dev:
 m cmd:
     diesel migration {{ cmd }}
 
+sync:
+    diesel migration run
+
 gen db-name:
-    diesel migration generate {{ db-name }}
+    diesel migration generate create_{{ db-name }}
