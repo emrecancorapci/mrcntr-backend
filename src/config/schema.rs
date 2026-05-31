@@ -1,6 +1,30 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    blogposts (id) {
+        id -> Int4,
+        #[max_length = 127]
+        title -> Varchar,
+        #[max_length = 127]
+        slug -> Varchar,
+        content -> Nullable<Text>,
+        #[max_length = 50]
+        category_slug -> Nullable<Varchar>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    categories (slug) {
+        #[max_length = 50]
+        slug -> Varchar,
+        #[max_length = 50]
+        title -> Varchar,
+    }
+}
+
+diesel::table! {
     experiences (id) {
         id -> Int4,
         #[max_length = 255]
@@ -34,7 +58,14 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(blogposts -> categories (category_slug));
 diesel::joinable!(experiences_tags -> experiences (experience_id));
 diesel::joinable!(experiences_tags -> tags (tag_slug));
 
-diesel::allow_tables_to_appear_in_same_query!(experiences, experiences_tags, tags,);
+diesel::allow_tables_to_appear_in_same_query!(
+    blogposts,
+    categories,
+    experiences,
+    experiences_tags,
+    tags,
+);
