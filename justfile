@@ -9,3 +9,6 @@ sync:
 
 gen db-name:
     diesel migration generate create_{{ db-name }}
+
+db cmd:
+    diesel database {{ cmd }}
