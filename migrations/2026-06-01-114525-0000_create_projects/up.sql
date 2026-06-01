@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS projects (
     SET NULL,
     project_type INT REFERENCES project_types(id) ON DELETE
     SET NULL,
+    ai_usage INT REFERENCES project_ai_usage(id) ON DELETE
+    SET NULL,
 
     -- Statuses
     is_featured BOOLEAN,

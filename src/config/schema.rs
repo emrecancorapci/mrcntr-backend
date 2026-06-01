@@ -1,5 +1,11 @@
 // @generated automatically by Diesel CLI.
 
+pub mod sql_types {
+    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "tag_types"))]
+    pub struct TagTypes;
+}
+
 diesel::table! {
     blogposts (id) {
         id -> Int4,
@@ -42,10 +48,21 @@ diesel::table! {
 }
 
 diesel::table! {
-    experiences_tags (experience_id, tag_slug) {
+    experiences_tags (experience_id, tag_id) {
         experience_id -> Int4,
+        tag_id -> Int4,
+        sort_order -> Nullable<Int2>,
+    }
+}
+
+diesel::table! {
+    project_ai_usage (id) {
+        id -> Int4,
         #[max_length = 50]
-        tag_slug -> Varchar,
+        title -> Varchar,
+        val -> Int2,
+        #[max_length = 500]
+        description -> Nullable<Varchar>,
     }
 }
 
@@ -73,14 +90,6 @@ diesel::table! {
         project_id -> Int4,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-    }
-}
-
-diesel::table! {
-    project_status (id) {
-        id -> Int4,
-        #[max_length = 50]
-        title -> Varchar,
     }
 }
 
@@ -114,6 +123,7 @@ diesel::table! {
         latest_version -> Nullable<Varchar>,
         project_status -> Nullable<Int4>,
         project_type -> Nullable<Int4>,
+        ai_usage -> Nullable<Int4>,
         is_featured -> Nullable<Bool>,
         is_visible -> Nullable<Bool>,
         created_at -> Timestamp,
@@ -124,32 +134,54 @@ diesel::table! {
 }
 
 diesel::table! {
-    tags (slug) {
+    projects_tags (project_id, tag_id) {
+        project_id -> Int4,
+        tag_id -> Int4,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::TagTypes;
+
+    tags (id) {
+        id -> Int4,
         #[max_length = 50]
         slug -> Varchar,
         #[max_length = 50]
         title -> Varchar,
+        tag_type -> Nullable<TagTypes>,
+        proficiency -> Nullable<Int2>,
+        #[max_length = 50]
+        icon -> Nullable<Varchar>,
+        #[max_length = 50]
+        color -> Nullable<Varchar>,
+        parent -> Nullable<Int4>,
     }
 }
 
 diesel::joinable!(blogposts -> categories (category_slug));
 diesel::joinable!(experiences_tags -> experiences (experience_id));
-diesel::joinable!(experiences_tags -> tags (tag_slug));
+diesel::joinable!(experiences_tags -> tags (tag_id));
 diesel::joinable!(project_blocks -> projects (project_id));
 diesel::joinable!(project_links -> projects (project_id));
+diesel::joinable!(projects -> project_ai_usage (ai_usage));
 diesel::joinable!(projects -> project_statuses (project_status));
 diesel::joinable!(projects -> project_types (project_type));
+diesel::joinable!(projects_tags -> projects (project_id));
+diesel::joinable!(projects_tags -> tags (tag_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     blogposts,
     categories,
     experiences,
     experiences_tags,
+    project_ai_usage,
     project_blocks,
     project_links,
-    project_status,
     project_statuses,
     project_types,
     projects,
+    projects_tags,
     tags,
 );
