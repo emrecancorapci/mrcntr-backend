@@ -1,4 +1,4 @@
-# Documentation
+# Backend App for [mrcn.tr](https://mrcn.tr)
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ just dev
 
 ### Migrations
 
-Creates migration files for `TABLE_NAME`. Alias for `diesel migration generate create_{tname}`.
+Creates migration files for `TABLE_NAME`. Alias for `diesel migration generate create_{TABLE_NAME}`.
 
 ```bash
 just gen TABLE_NAME
@@ -51,7 +51,9 @@ Setups the database.
 just db setup
 ```
 
-## Structure
+## Project Structure
+
+I decided to follow a monolith modular structure.
 
 ```textfile
 /src
