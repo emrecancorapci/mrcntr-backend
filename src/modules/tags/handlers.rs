@@ -18,17 +18,17 @@ pub async fn many(pool: web::Data<DbPool>) -> actix_web::Result<impl Responder> 
     Ok(HttpResponse::Ok().json(data))
 }
 
-#[get("/{slug}")]
+#[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
-    path: web::Path<String>,
+    path: web::Path<i32>,
 ) -> actix_web::Result<impl Responder> {
-    let slug = path.into_inner();
+    let id = path.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
-        repository::one(&mut conn, &slug)
+        repository::one(&mut conn, &id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
@@ -60,19 +60,19 @@ pub async fn insert(
     }
 }
 
-#[patch("/{slug}")]
+#[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
-    path: web::Path<String>,
+    path: web::Path<i32>,
     tag_json: web::Json<UpdateTag>,
 ) -> actix_web::Result<impl Responder> {
     let tag = tag_json.into_inner();
-    let slug = path.into_inner();
+    let id = path.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
-        repository::update(&mut conn, &slug, tag)
+        repository::update(&mut conn, &id, tag)
     })
     .await
     .map_err(ErrorInternalServerError)?;
@@ -83,17 +83,17 @@ pub async fn update(
     }
 }
 
-#[delete("/{slug}")]
+#[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,
-    path: web::Path<String>,
+    path: web::Path<i32>,
 ) -> actix_web::Result<impl Responder> {
-    let slug = path.into_inner();
+    let id = path.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
-        repository::delete(&mut conn, &slug)
+        repository::delete(&mut conn, &id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
