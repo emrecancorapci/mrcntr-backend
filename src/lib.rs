@@ -6,6 +6,7 @@ mod config {
 mod modules {
     pub mod experiences;
     pub mod tags;
+    pub mod experiences_tags;
 }
 
 pub mod router;
