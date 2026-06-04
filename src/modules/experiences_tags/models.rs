@@ -15,3 +15,15 @@ pub struct ExperienceTag {
     pub tag_id: i32,
     pub sort_order: Option<i16>,
 }
+
+#[derive(Deserialize)]
+pub struct InsertManyExperienceTagsItem {
+    pub tag_id: i32,
+    pub sort: Option<i16>,
+}
+
+#[derive(Deserialize)]
+pub struct InsertManyExperienceTagsBody {
+    pub experience_id: i32,
+    pub tags: Vec<InsertManyExperienceTagsItem>,
+}
