@@ -1,9 +1,10 @@
 use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::modules::{experiences::*, tags::*};
 use crate::schema;
 
-#[derive(Identifiable, Insertable, Selectable, Queryable, Associations, Debug)]
+#[derive(Identifiable, Insertable, Selectable, Queryable, Associations, Serialize, Deserialize, Debug)]
 #[diesel(table_name = schema::experiences_tags)]
 #[diesel(belongs_to(Experience))]
 #[diesel(belongs_to(Tag))]
