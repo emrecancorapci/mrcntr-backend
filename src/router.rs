@@ -1,6 +1,6 @@
-use actix_web::{guard, web};
+use actix_web::web;
 
-use crate::modules::{experiences, tags};
+use crate::modules::{experiences, experiences_tags, tags};
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     let v1 = web::scope("/v1");
@@ -23,6 +23,14 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             .service(tags::insert)
             .service(tags::update)
             .service(tags::delete),
+    );
+
+    let v1 = v1.service(
+        web::scope("/experiences-tags")
+            .service(experiences_tags::insert_one)
+            .service(experiences_tags::insert_many)
+            .service(experiences_tags::replace_many_by_experience_id)
+            .service(experiences_tags::delete),
     );
 
     cfg.service(web::scope("/api").service(v1));
