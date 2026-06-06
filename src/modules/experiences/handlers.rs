@@ -1,9 +1,13 @@
 use actix_web::{
     HttpResponse, Responder, delete, error::ErrorInternalServerError, get, patch, post, web,
 };
+use diesel::Connection;
 
-use super::{NewExperience, UpdateExperience, repository};
-use crate::DbPool;
+use super::{ExperienceInsertBody, ExperienceUpdateBody, repository};
+use crate::{
+    DbPool,
+    modules::experiences_tags::{self, ExperienceTag},
+};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> actix_web::Result<impl Responder> {
@@ -42,14 +46,37 @@ pub async fn one(
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
-    experience_json: web::Json<NewExperience>,
+    experience_json: web::Json<ExperienceInsertBody>,
 ) -> actix_web::Result<impl Responder> {
-    let experience = experience_json.into_inner();
+    let body = experience_json.into_inner();
+    let experience = body.to_new_experience();
 
     let data = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
-        repository::insert(&mut conn, experience)
+        conn.transaction(|t| {
+            let exp = repository::insert(&mut *t, experience)?;
+
+            if body.tags.is_none() {
+                return Ok::<(), diesel::result::Error>(());
+            }
+
+            experiences_tags::repository::insert_many(
+                &mut *t,
+                body.tags
+                    .unwrap_or_default()
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, tag_id)| ExperienceTag {
+                        experience_id: exp.id,
+                        tag_id,
+                        sort_order: Some(i as i16),
+                    })
+                    .collect(),
+            )?;
+
+            return Ok(());
+        })
     })
     .await
     .map_err(ErrorInternalServerError)?;
@@ -64,15 +91,39 @@ pub async fn insert(
 pub async fn update(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-    experience_json: web::Json<UpdateExperience>,
+    experience_json: web::Json<ExperienceUpdateBody>,
 ) -> actix_web::Result<impl Responder> {
-    let experience = experience_json.into_inner();
+    let body = experience_json.into_inner();
+    let experience = body.to_update_experience();
     let id = path.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
-        repository::update(&mut conn, &id, experience)
+        conn.transaction(|t| {
+            repository::update(&mut *t, &id, experience)?;
+
+            if body.tags.is_none() {
+                return Ok::<(), diesel::result::Error>(());
+            }
+
+            experiences_tags::repository::replace_many(
+                &mut *t,
+                id,
+                body.tags
+                    .unwrap_or_default()
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, tag_id)| ExperienceTag {
+                        experience_id: id,
+                        tag_id,
+                        sort_order: Some(i as i16),
+                    })
+                    .collect(),
+            )?;
+
+            return Ok(());
+        })
     })
     .await
     .map_err(ErrorInternalServerError)?;
