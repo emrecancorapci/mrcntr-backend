@@ -3,11 +3,7 @@ mod config {
     pub mod schema;
 }
 
-mod modules {
-    pub mod experiences;
-    pub mod tags;
-    pub mod experiences_tags;
-}
+mod modules;
 
 pub mod router;
 
