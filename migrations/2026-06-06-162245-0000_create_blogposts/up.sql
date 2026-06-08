@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS blogposts (
     title VARCHAR(127) NOT NULL,
     slug VARCHAR(127) NOT NULL UNIQUE,
     content TEXT,
+    author_uuid UUID NOT NULL REFERENCES users(uuid) ON DELETE CASCADE,
 
     -- References
     category_slug VARCHAR(50) REFERENCES categories(slug) ON DELETE

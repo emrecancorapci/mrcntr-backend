@@ -160,6 +160,18 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    users (uuid) {
+        uuid -> Uuid,
+        #[max_length = 255]
+        email -> Varchar,
+        #[max_length = 255]
+        password_hash -> Varchar,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
 diesel::joinable!(blogposts -> categories (category_slug));
 diesel::joinable!(experiences_tags -> experiences (experience_id));
 diesel::joinable!(experiences_tags -> tags (tag_id));
@@ -184,4 +196,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     projects,
     projects_tags,
     tags,
+    users,
 );
