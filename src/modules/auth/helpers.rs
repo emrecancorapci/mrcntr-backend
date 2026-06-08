@@ -1,5 +1,7 @@
 use argon2::{Argon2, PasswordHasher, PasswordVerifier};
-use jsonwebtoken::{EncodingKey, Header};
+use jsonwebtoken::{
+    DecodingKey, EncodingKey, Header, TokenData, Validation, decode, errors::Error,
+};
 use password_hash::phc::PasswordHash;
 
 use crate::modules::auth::Claims;
@@ -18,6 +20,14 @@ pub fn generate_jwt(uuid: String) -> Result<String, Box<dyn std::error::Error>> 
     let token_str = jsonwebtoken::encode(&Header::default(), &claims, &key)?;
 
     Ok(token_str)
+}
+
+pub fn decode_jwt(token: String) -> Result<TokenData<Claims>, Error> {
+    decode::<Claims>(
+        &token,
+        &DecodingKey::from_secret("secret".as_ref()),
+        &Validation::default(),
+    )
 }
 
 pub fn hash_password(password: &str) -> Result<String, argon2::password_hash::Error> {

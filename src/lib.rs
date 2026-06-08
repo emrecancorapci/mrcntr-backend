@@ -3,6 +3,10 @@ mod config {
     pub mod schema;
 }
 
+pub mod middlewares {
+    pub mod auth;
+}
+
 mod modules;
 
 pub mod router;
