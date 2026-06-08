@@ -5,7 +5,16 @@ edition = "2024"
 
 [dependencies]
 actix-web = "4.13.0"
+argon2 = { version = "0.6.0-rc.8" }
 chrono = { version = "0.4.45", features = ["serde"] }
-diesel = { version = "2.3.10", features = ["postgres", "chrono", "r2d2"] }
+diesel = { version = "2.3.10", features = [
+    "postgres",
+    "chrono",
+    "r2d2",
+    "uuid",
+] }
 dotenvy = "0.15.7"
+jsonwebtoken = "10.4.0"
+password-hash = "0.6.1"
 serde = { version = "1.0.228", features = ["derive"] }
+uuid = { version = "1.23.2", features = ["serde", "v4"] }
