@@ -1,6 +1,6 @@
 use actix_web::web;
 
-use crate::modules::{categories, experiences, experiences_tags, tags};
+use crate::modules::{categories, experiences, experiences_tags, tags, users};
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     let v1 = web::scope("/v1");
@@ -40,6 +40,15 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             .service(categories::insert)
             .service(categories::update)
             .service(categories::delete),
+    );
+
+    let v1 = v1.service(
+        web::scope("/user")
+            .service(users::many)
+            .service(users::one)
+            .service(users::insert)
+            .service(users::update)
+            .service(users::delete),
     );
 
     cfg.service(web::scope("/api").service(v1));
