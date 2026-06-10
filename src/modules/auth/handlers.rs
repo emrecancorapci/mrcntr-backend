@@ -1,10 +1,17 @@
-use actix_web::{HttpResponse, Responder, error::ErrorInternalServerError, post, web};
+use actix_web::{
+    HttpResponse, Responder,
+    error::{ErrorBadRequest, ErrorInternalServerError},
+    post, web,
+};
 
 use super::{LoginRequest, helpers::hash_password};
 use crate::{
     DbPool,
     modules::{
-        auth::{AuthResponse, helpers::generate_jwt},
+        auth::{
+            AuthResponse,
+            helpers::{generate_jwt, verify_password},
+        },
         users::{NewUser, repository},
     },
 };
@@ -59,11 +66,17 @@ pub async fn login(
 
     match data {
         Ok(Some(user)) => {
+            verify_password(&login_request.password, &user.password_hash).map_err(|err| {
+                dbg!(err.to_string());
+
+                ErrorBadRequest(err)
+            })?;
+
             let token = generate_jwt(user.uuid.to_string()).map_err(ErrorInternalServerError)?;
 
             return Ok(HttpResponse::Ok().json(token));
         }
-        Ok(None) => Ok(HttpResponse::Unauthorized().finish()),
+        Ok(None) => Ok(HttpResponse::BadRequest().finish()),
         Err(_) => Ok(HttpResponse::NotFound().finish()),
     }
 }
