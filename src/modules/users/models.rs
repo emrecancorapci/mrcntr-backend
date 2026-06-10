@@ -23,7 +23,6 @@ pub struct NewUser {
 }
 
 #[derive(Serialize, Deserialize)]
-
 pub struct NewUserBody {
     pub email: String,
     pub password: String,
@@ -41,4 +40,23 @@ pub struct UpdateUser {
 pub struct UpdateUserBody {
     pub email: Option<String>,
     pub password: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct UserResponse {
+    pub uuid: Uuid,
+    pub email: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl User {
+    pub fn to_response(&self) -> UserResponse {
+        UserResponse {
+            uuid: self.uuid,
+            email: self.email.to_string(),
+            created_at: self.created_at,
+            updated_at: self.updated_at,
+        }
+    }
 }

@@ -3,7 +3,10 @@ use actix_web::{
 };
 
 use super::{NewUser, NewUserBody, UpdateUser, repository};
-use crate::{DbPool, modules::{auth::helpers::hash_password, users::UpdateUserBody}};
+use crate::{
+    DbPool,
+    modules::{auth::helpers::hash_password, users::UpdateUserBody},
+};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> actix_web::Result<impl Responder> {
@@ -28,7 +31,7 @@ pub async fn one(
         .parse::<uuid::Uuid>()
         .map_err(|_| ErrorInternalServerError("Invalid UUID format"))?;
 
-    let data = web::block(move || {
+    let result = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
         repository::one(&mut conn, uuid)
@@ -36,8 +39,8 @@ pub async fn one(
     .await?
     .map_err(ErrorInternalServerError)?;
 
-    match data {
-        Some(exp) => Ok(HttpResponse::Ok().json(exp)),
+    match result {
+        Some(data) => Ok(HttpResponse::Ok().json(data)),
         None => Ok(HttpResponse::NotFound().finish()),
     }
 }
@@ -54,7 +57,7 @@ pub async fn insert(
         password_hash: hash,
     };
 
-    let data = web::block(move || {
+    let result = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
         repository::insert(&mut conn, new_user)
@@ -62,8 +65,8 @@ pub async fn insert(
     .await
     .map_err(ErrorInternalServerError)?;
 
-    match data {
-        Ok(user) => Ok(HttpResponse::Ok().json(user)),
+    match result {
+        Ok(data) => Ok(HttpResponse::Ok().json(data)),
         Err(_) => Ok(HttpResponse::NotFound().finish()),
     }
 }
@@ -80,13 +83,17 @@ pub async fn update(
         .parse::<uuid::Uuid>()
         .map_err(|_| ErrorInternalServerError("Invalid UUID format"))?;
 
-    let hash = body.password.map(|p| hash_password(&p)).transpose().map_err(ErrorInternalServerError)?;
+    let hash = body
+        .password
+        .map(|p| hash_password(&p))
+        .transpose()
+        .map_err(ErrorInternalServerError)?;
     let update_user = UpdateUser {
         email: body.email,
         password_hash: hash,
     };
 
-    let data = web::block(move || {
+    let result = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
         repository::update(&mut conn, uuid, update_user)
@@ -94,8 +101,8 @@ pub async fn update(
     .await
     .map_err(ErrorInternalServerError)?;
 
-    match data {
-        Ok(exp) => Ok(HttpResponse::Ok().json(exp)),
+    match result {
+        Ok(data) => Ok(HttpResponse::Ok().json(data)),
         Err(_) => Ok(HttpResponse::NotFound().finish()),
     }
 }
@@ -110,7 +117,7 @@ pub async fn delete(
         .parse::<uuid::Uuid>()
         .map_err(|_| ErrorInternalServerError("Invalid UUID format"))?;
 
-    let data = web::block(move || {
+    let result = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
 
         repository::delete(&mut conn, uuid)
@@ -118,8 +125,8 @@ pub async fn delete(
     .await?
     .map_err(ErrorInternalServerError)?;
 
-    match data {
-        Some(exp) => Ok(HttpResponse::Ok().json(exp)),
+    match result {
+        Some(data) => Ok(HttpResponse::Ok().json(data)),
         None => Ok(HttpResponse::NotFound().finish()),
     }
 }
