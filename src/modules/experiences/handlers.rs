@@ -1,64 +1,66 @@
-use actix_web::{
-    HttpResponse, Responder, delete, error::ErrorInternalServerError, get, patch, post, web,
-};
+use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use diesel::Connection;
 
 use super::{ExperienceInsertBody, ExperienceUpdateBody, repository};
 use crate::{
     DbPool,
+    config::error_handler::AppError,
     modules::experiences_tags::{self, ExperienceTag},
 };
 
 #[get("")]
-pub async fn many(pool: web::Data<DbPool>) -> actix_web::Result<impl Responder> {
+pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError>  {
     let data = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::many(&mut conn)
+        repository::many(&mut conn).map_err(AppError::from)
     })
-    .await?
-    .map_err(ErrorInternalServerError)?;
+    .await??;
 
-    Ok(HttpResponse::Ok().json(data))
+    return Ok(HttpResponse::Ok().json(data));
 }
 
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-) -> actix_web::Result<impl Responder> {
+) -> Result<impl Responder, AppError>  {
     let id = path.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+    let result = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::one(&mut conn, &id)
+        repository::one(&mut conn, &id).map_err(AppError::from)
     })
-    .await?
-    .map_err(ErrorInternalServerError)?;
+    .await??;
 
-    match data {
-        Some(exp) => Ok(HttpResponse::Ok().json(exp)),
-        None => Ok(HttpResponse::NotFound().finish()),
-    }
+    let data = result.ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
+
+    return Ok(HttpResponse::Ok().json(data));
 }
 
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
     experience_json: web::Json<ExperienceInsertBody>,
-) -> actix_web::Result<impl Responder> {
+) -> Result<impl Responder, AppError>  {
     let body = experience_json.into_inner();
     let experience = body.to_new_experience();
 
     let data = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
 
         conn.transaction(|t| {
             let exp = repository::insert(&mut *t, experience)?;
 
             if body.tags.is_none() {
-                return Ok::<(), diesel::result::Error>(());
+                return Ok::<(), AppError>(());
             }
 
             experiences_tags::repository::insert_many(
@@ -78,13 +80,9 @@ pub async fn insert(
             return Ok(());
         })
     })
-    .await
-    .map_err(ErrorInternalServerError)?;
+    .await??;
 
-    match data {
-        Ok(exp) => Ok(HttpResponse::Ok().json(exp)),
-        Err(_) => Ok(HttpResponse::NotFound().finish()),
-    }
+    return Ok(HttpResponse::Created().json(data));
 }
 
 #[patch("/{id}")]
@@ -92,19 +90,22 @@ pub async fn update(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
     experience_json: web::Json<ExperienceUpdateBody>,
-) -> actix_web::Result<impl Responder> {
+) -> Result<impl Responder, AppError>  {
     let body = experience_json.into_inner();
     let experience = body.to_update_experience();
     let id = path.into_inner();
 
     let data = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
 
         conn.transaction(|t| {
-            repository::update(&mut *t, &id, experience)?;
+            repository::update(&mut *t, &id, experience)?
+                .ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
 
             if body.tags.is_none() {
-                return Ok::<(), diesel::result::Error>(());
+                return Ok::<(), AppError>(());
             }
 
             experiences_tags::repository::replace_many(
@@ -120,37 +121,34 @@ pub async fn update(
                         sort_order: Some(i as i16),
                     })
                     .collect(),
-            )?;
+            )
+            .map_err(AppError::from)?;
 
             return Ok(());
         })
     })
-    .await
-    .map_err(ErrorInternalServerError)?;
+    .await??;
 
-    match data {
-        Ok(exp) => Ok(HttpResponse::Ok().json(exp)),
-        Err(_) => Ok(HttpResponse::NotFound().finish()),
-    }
+    return Ok(HttpResponse::Ok().json(data));
 }
 
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-) -> actix_web::Result<impl Responder> {
+) -> Result<impl Responder, AppError>  {
     let id = path.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+    let result = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::delete(&mut conn, &id)
+        repository::delete(&mut conn, &id).map_err(AppError::from)
     })
-    .await?
-    .map_err(ErrorInternalServerError)?;
+    .await??;
 
-    match data {
-        Some(exp) => Ok(HttpResponse::Ok().json(exp)),
-        None => Ok(HttpResponse::NotFound().finish()),
-    }
+    let data = result.ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
+
+    return Ok(HttpResponse::Ok().json(data));
 }
