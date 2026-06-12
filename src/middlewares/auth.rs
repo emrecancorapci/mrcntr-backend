@@ -8,7 +8,7 @@ use actix_web::{
 
 use crate::modules::auth::helpers::decode_jwt;
 
-async fn auth_middleware(
+pub async fn auth_middleware(
     req: ServiceRequest,
     next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, Error> {
