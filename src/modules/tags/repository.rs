@@ -2,7 +2,7 @@ use diesel::{
     ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper, result::Error,
 };
 
-use super::{Tag, UpdateTag};
+use super::{Tag, UpdateTag, NewTag};
 use crate::{PooledConn, schema::tags};
 
 pub fn one(conn: &mut PooledConn, id: &i32) -> Result<Option<Tag>, Error> {
@@ -13,7 +13,7 @@ pub fn many(conn: &mut PooledConn) -> Result<Vec<Tag>, Error> {
     tags::table.order_by(tags::id.desc()).load::<Tag>(conn)
 }
 
-pub fn insert(conn: &mut PooledConn, tag: Tag) -> Result<Tag, Error> {
+pub fn insert(conn: &mut PooledConn, tag: NewTag) -> Result<Tag, Error> {
     diesel::insert_into(tags::table)
         .values(&tag)
         .returning(Tag::as_returning())

@@ -1,7 +1,7 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use super::{Tag, UpdateTag, repository};
-use crate::{DbPool, config::error_handler::AppError};
+use super::{UpdateTag, repository};
+use crate::{DbPool, config::error_handler::AppError, modules::tags::NewTag};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError>  {
@@ -41,7 +41,7 @@ pub async fn one(
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
-    tag_json: web::Json<Tag>,
+    tag_json: web::Json<NewTag>,
 ) -> Result<impl Responder, AppError>  {
     let tag = tag_json.into_inner();
 

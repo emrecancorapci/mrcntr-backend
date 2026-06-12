@@ -9,7 +9,7 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Insertable, Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Tag {
@@ -20,7 +20,22 @@ pub struct Tag {
     pub proficiency: Option<i16>,
     pub icon: Option<String>,
     pub color: Option<String>,
-    pub parent: Option<i32>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub parent_id: Option<i32>,
+}
+
+#[derive(Insertable, Debug, Clone, Serialize, Deserialize)]
+#[diesel(table_name = schema::tags)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewTag {
+    pub slug: String,
+    pub title: String,
+    pub tag_type: Option<TagTypeEnum>,
+    pub proficiency: Option<i16>,
+    pub icon: Option<String>,
+    pub color: Option<String>,
+    pub parent_id: Option<i32>,
 }
 
 #[derive(AsChangeset, Debug, Clone, Deserialize)]
@@ -33,7 +48,7 @@ pub struct UpdateTag {
     pub proficiency: Option<i16>,
     pub icon: Option<String>,
     pub color: Option<String>,
-    pub parent: Option<i32>,
+    pub parent_id: Option<i32>,
 }
 
 #[derive(AsExpression, FromSqlRow, Debug, Serialize, Deserialize, Clone)]

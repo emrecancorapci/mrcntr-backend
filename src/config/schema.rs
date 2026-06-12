@@ -14,6 +14,7 @@ diesel::table! {
         #[max_length = 127]
         slug -> Varchar,
         content -> Nullable<Text>,
+        author_uuid -> Uuid,
         #[max_length = 50]
         category_slug -> Nullable<Varchar>,
         created_at -> Timestamp,
@@ -156,7 +157,9 @@ diesel::table! {
         icon -> Nullable<Varchar>,
         #[max_length = 50]
         color -> Nullable<Varchar>,
-        parent -> Nullable<Int4>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        parent_id -> Nullable<Int4>,
     }
 }
 
@@ -173,6 +176,7 @@ diesel::table! {
 }
 
 diesel::joinable!(blogposts -> categories (category_slug));
+diesel::joinable!(blogposts -> users (author_uuid));
 diesel::joinable!(experiences_tags -> experiences (experience_id));
 diesel::joinable!(experiences_tags -> tags (tag_id));
 diesel::joinable!(project_blocks -> projects (project_id));
