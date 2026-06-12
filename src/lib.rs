@@ -1,4 +1,5 @@
 mod config {
+    pub mod error_handler;
     pub mod db;
     pub mod schema;
 }
