@@ -1,82 +1,64 @@
-use actix_web::{
-    HttpResponse, Responder,
-    error::{ErrorBadRequest, ErrorInternalServerError},
-    post, web,
-};
+use actix_web::{HttpResponse, Responder, post, web};
 
-use super::{LoginRequest, helpers::hash_password};
+use super::{
+    AuthResponse, LoginRequest,
+    helpers::{generate_jwt, hash_password, verify_password},
+};
 use crate::{
     DbPool,
-    modules::{
-        auth::{
-            AuthResponse,
-            helpers::{generate_jwt, verify_password},
-        },
-        users::{NewUser, repository},
-    },
+    config::error_handler::AppError,
+    modules::users::{NewUser, repository},
 };
 
 #[post("/register")]
 pub async fn register(
     pool: web::Data<DbPool>,
     body: web::Json<LoginRequest>,
-) -> actix_web::Result<impl Responder> {
+) -> Result<impl Responder, AppError> {
     let login_request = body.into_inner();
 
-    let hashed_password = hash_password(&login_request.password).map_err(ErrorInternalServerError);
+    let hashed_password = hash_password(&login_request.password)?;
 
     let new_user = NewUser {
         email: login_request.email,
-        password_hash: hashed_password?,
+        password_hash: hashed_password,
     };
 
-    let data = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+    let user = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, new_user)
+        repository::insert(&mut conn, new_user).map_err(AppError::from)
     })
-    .await
-    .map_err(ErrorInternalServerError)?;
+    .await??; 
 
-    match data {
-        Ok(user) => {
-            let token = generate_jwt(user.uuid.to_string()).map_err(ErrorInternalServerError)?;
-            let payload = AuthResponse { token };
+    let token = generate_jwt(user.uuid.to_string())?;
 
-            return Ok(HttpResponse::Ok().json(payload));
-        }
-        Err(_) => Ok(HttpResponse::NotFound().finish()),
-    }
+    Ok(HttpResponse::Ok().json(AuthResponse { token }))
 }
 
 #[post("/login")]
 pub async fn login(
     pool: web::Data<DbPool>,
     body: web::Json<LoginRequest>,
-) -> actix_web::Result<impl Responder> {
+) -> Result<impl Responder, AppError> {
     let login_request = body.into_inner();
 
     let data = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::one_by_email(&mut conn, &login_request.email)
+        repository::one_by_email(&mut conn, &login_request.email).map_err(AppError::from)
     })
-    .await
-    .map_err(ErrorInternalServerError)?;
+    .await??;
 
-    match data {
-        Ok(Some(user)) => {
-            verify_password(&login_request.password, &user.password_hash).map_err(|err| {
-                dbg!(err.to_string());
+    let user = data.ok_or_else(|| AppError::BadRequest("Credentials are wrong.".to_string()))?;
 
-                ErrorBadRequest(err)
-            })?;
+    verify_password(&login_request.password, &user.password_hash)?;
 
-            let token = generate_jwt(user.uuid.to_string()).map_err(ErrorInternalServerError)?;
+    let token = generate_jwt(user.uuid.to_string())?;
 
-            return Ok(HttpResponse::Ok().json(token));
-        }
-        Ok(None) => Ok(HttpResponse::BadRequest().finish()),
-        Err(_) => Ok(HttpResponse::NotFound().finish()),
-    }
+    Ok(HttpResponse::Ok().json(AuthResponse { token }))
 }
