@@ -7,8 +7,6 @@ use password_hash::phc::PasswordHash;
 use crate::modules::auth::Claims;
 
 pub fn generate_jwt(uuid: String) -> Result<String, Box<dyn std::error::Error>> {
-    dotenvy::dotenv().ok();
-
     let secret_key = std::env::var("SECRET_KEY").expect("SECRET_KEY must be set");
     let key = EncodingKey::from_secret(secret_key.as_ref());
 

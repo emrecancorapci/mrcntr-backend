@@ -2,6 +2,8 @@ use actix_web::{App, HttpServer, web};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenvy::dotenv().ok();
+
     let pool = mrcntr::establish_connection();
     let shared_pool = web::Data::new(pool);
 
