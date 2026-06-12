@@ -14,7 +14,7 @@ diesel = { version = "2.3.10", features = [
     "uuid",
 ] }
 dotenvy = "0.15.7"
-jsonwebtoken = "10.4.0"
+jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
 password-hash = "0.6.1"
 serde = { version = "1.0.228", features = ["derive"] }
 uuid = { version = "1.23.3", features = ["serde", "v4"] }
