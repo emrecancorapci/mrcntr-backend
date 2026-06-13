@@ -1,4 +1,5 @@
-use actix_web::{App, HttpServer, web};
+use actix_limitation::RateLimiter;
+use actix_web::{App, HttpServer, middleware::Logger, web};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -7,8 +8,13 @@ async fn main() -> std::io::Result<()> {
     let pool = mrcntr::establish_connection();
     let shared_pool = web::Data::new(pool);
 
+    let limiter = web::Data::new(mrcntr::build_limiter());
+
     let app = move || {
         App::new()
+            .wrap(RateLimiter::default())
+            .app_data(limiter.clone())
+            .wrap(Logger::default())
             .app_data(shared_pool.clone())
             .configure(mrcntr::router::routes)
     };

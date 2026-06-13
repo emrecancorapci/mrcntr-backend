@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+actix-limitation = "0.5.1"
+actix-session = "0.11.0"
 actix-web = "4.13.0"
 argon2 = { version = "0.6.0-rc.8" }
 chrono = { version = "0.4.45", features = ["serde"] }
