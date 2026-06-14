@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 #[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::users)]
+#[diesel(belongs_to(Role))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
     pub uuid: Uuid,
@@ -23,7 +24,7 @@ pub struct User {
 pub struct NewUser {
     pub email: String,
     pub password_hash: String,
-    pub role_id: i32
+    pub role_id: i32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -50,15 +51,17 @@ pub struct UpdateUserBody {
 pub struct UserResponse {
     pub uuid: Uuid,
     pub email: String,
+    pub role: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl User {
-    pub fn to_response(&self) -> UserResponse {
+impl Into<UserResponse> for User {
+    fn into(self) -> UserResponse {
         UserResponse {
             uuid: self.uuid,
             email: self.email.to_string(),
+            role: None,
             created_at: self.created_at,
             updated_at: self.updated_at,
         }
