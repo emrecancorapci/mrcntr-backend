@@ -9,6 +9,7 @@ pub enum AppError {
     NotFound(String),
     BadRequest(String),
     Internal(String),
+    Unauthorized(String),
 }
 
 #[derive(Serialize)]
@@ -28,6 +29,12 @@ impl ResponseError for AppError {
                 error: err.to_string(),
                 code: None,
             }),
+            AppError::Unauthorized(err) => {
+                return HttpResponse::Unauthorized().json(ErrorResponse {
+                    error: err.to_string(),
+                    code: None,
+                });
+            }
             AppError::Internal(err) => {
                 eprintln!("[SERVER ERROR] Internal failure: {}", err);
 
@@ -52,6 +59,7 @@ impl fmt::Display for AppError {
             AppError::NotFound(msg) => write!(f, "Not Found: {msg}"),
             AppError::BadRequest(msg) => write!(f, "Bad Request: {msg}"),
             AppError::Internal(msg) => write!(f, "Internal Server Error: {msg}"),
+            AppError::Unauthorized(msg) => write!(f, "Unauthorized: {msg}"),
         }
     }
 }
@@ -139,6 +147,12 @@ impl From<Box<std::io::Error>> for AppError {
 
 impl From<Box<dyn std::error::Error>> for AppError {
     fn from(value: Box<dyn std::error::Error>) -> Self {
+        AppError::Internal(value.to_string())
+    }
+}
+
+impl From<actix_web::Error> for AppError {
+    fn from(value: actix_web::Error) -> Self {
         AppError::Internal(value.to_string())
     }
 }
