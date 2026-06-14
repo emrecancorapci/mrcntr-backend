@@ -4,3 +4,4 @@ pub mod tags;
 pub mod categories;
 pub mod auth;
 pub mod users;
+pub mod roles;
