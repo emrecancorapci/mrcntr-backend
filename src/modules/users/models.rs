@@ -1,4 +1,5 @@
 use crate::config::schema;
+use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -10,8 +11,10 @@ pub struct User {
     pub uuid: Uuid,
     pub email: String,
     pub password_hash: String,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub role_id: i32,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable, Serialize, Deserialize)]

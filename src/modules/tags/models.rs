@@ -20,9 +20,9 @@ pub struct Tag {
     pub proficiency: Option<i16>,
     pub icon: Option<String>,
     pub color: Option<String>,
+    pub parent_id: Option<i32>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub parent_id: Option<i32>,
 }
 
 #[derive(Insertable, Debug, Clone, Serialize, Deserialize)]
