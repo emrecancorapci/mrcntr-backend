@@ -22,6 +22,7 @@ pub async fn register(
     let new_user = NewUser {
         email: login_request.email,
         password_hash: hashed_password,
+        role_id: 3,
     };
 
     let user = web::block(move || {
@@ -31,7 +32,7 @@ pub async fn register(
 
         repository::insert(&mut conn, new_user).map_err(AppError::from)
     })
-    .await??; 
+    .await??;
 
     let token = generate_jwt(user.uuid.to_string())?;
 

@@ -55,6 +55,7 @@ pub async fn insert(
     let new_user = NewUser {
         email: body.email,
         password_hash: hash,
+        role_id: 3,
     };
 
     let data = web::block(move || {

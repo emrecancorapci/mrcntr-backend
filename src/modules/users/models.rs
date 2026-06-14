@@ -23,6 +23,7 @@ pub struct User {
 pub struct NewUser {
     pub email: String,
     pub password_hash: String,
+    pub role_id: i32
 }
 
 #[derive(Serialize, Deserialize)]
