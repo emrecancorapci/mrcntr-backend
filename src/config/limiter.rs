@@ -5,9 +5,9 @@ use actix_session::SessionExt;
 use actix_web::dev::ServiceRequest;
 
 pub fn build_limiter() -> Limiter {
-    let valkey_url = std::env::var("VALKEY_URL").expect("DATABASE_URL must be set");
+    let redis_url = std::env::var("REDIS_URL").expect("DATABASE_URL must be set");
 
-    Limiter::builder(valkey_url)
+    Limiter::builder(redis_url)
         .key_by(|req: &ServiceRequest| {
             req.get_session()
                 .get(&"session-id")
