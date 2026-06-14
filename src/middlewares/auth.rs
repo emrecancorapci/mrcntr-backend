@@ -29,7 +29,8 @@ pub async fn auth_middleware(
         Err(ErrorUnauthorized("Malformed Authorization header"))
     }?;
 
-    let claim = decode_jwt(token.to_string());
+    let claim = decode_jwt(token.to_string())
+        .map_err(|_| ErrorUnauthorized("Malformed token detected"))?;
 
     req.extensions_mut().insert(claim);
 
