@@ -5,20 +5,20 @@ CREATE TABLE IF NOT EXISTS projects (
     content TEXT NOT NULL,
     
     -- Details
-    year_created_at SMALLINT,
+    year_created_at SMALLINT NOT NULL,
     latest_version VARCHAR(50),
 
     -- References
-    project_status INT REFERENCES project_statuses(id) ON DELETE
+    project_status_id INT REFERENCES project_statuses(id) ON DELETE
     SET NULL,
-    project_type INT REFERENCES project_types(id) ON DELETE
+    project_type_id INT REFERENCES project_types(id) ON DELETE
     SET NULL,
-    ai_usage INT REFERENCES project_ai_usage(id) ON DELETE
+    project_ai_usage_id INT REFERENCES project_ai_usage(id) ON DELETE
     SET NULL,
 
     -- Statuses
-    is_featured BOOLEAN,
-    is_visible BOOLEAN,
+    is_featured BOOLEAN NOT NULL DEFAULT FALSE,
+    is_visible BOOLEAN NOT NULL DEFAULT TRUE,
 
     -- Dates
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
