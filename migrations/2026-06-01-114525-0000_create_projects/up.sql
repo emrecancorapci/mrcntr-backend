@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS projects (
     is_visible BOOLEAN,
 
     -- Dates
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    published_at TIMESTAMP,
-    deleted_at TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    published_at TIMESTAMPTZ,
+    deleted_at TIMESTAMPTZ
 )

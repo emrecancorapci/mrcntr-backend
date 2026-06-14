@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS blogposts (
     SET NULL,
     
     -- Dates
-    published_at TIMESTAMP NOT NULL DEFAULT current_timestamp, 
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    deleted_at TIMESTAMP
+    published_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, 
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMPTZ
 )

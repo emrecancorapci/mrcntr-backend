@@ -15,10 +15,13 @@ diesel::table! {
         slug -> Varchar,
         content -> Nullable<Text>,
         author_uuid -> Uuid,
+        is_visible -> Bool,
         #[max_length = 50]
         category_slug -> Nullable<Varchar>,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
+        published_at -> Timestamptz,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -28,6 +31,18 @@ diesel::table! {
         slug -> Varchar,
         #[max_length = 50]
         title -> Varchar,
+    }
+}
+
+diesel::table! {
+    comments (id) {
+        id -> Int4,
+        author_uuid -> Uuid,
+        content -> Text,
+        parent_comment -> Int4,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -43,8 +58,8 @@ diesel::table! {
         location -> Varchar,
         start_date -> Date,
         end_date -> Nullable<Date>,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
     }
 }
 
@@ -75,8 +90,8 @@ diesel::table! {
         title -> Varchar,
         content -> Text,
         project_id -> Int4,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
     }
 }
 
@@ -89,8 +104,8 @@ diesel::table! {
         #[max_length = 255]
         link -> Varchar,
         project_id -> Int4,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
     }
 }
 
@@ -127,10 +142,10 @@ diesel::table! {
         ai_usage -> Nullable<Int4>,
         is_featured -> Nullable<Bool>,
         is_visible -> Nullable<Bool>,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        published_at -> Nullable<Timestamp>,
-        deleted_at -> Nullable<Timestamp>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        published_at -> Nullable<Timestamptz>,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -138,6 +153,14 @@ diesel::table! {
     projects_tags (project_id, tag_id) {
         project_id -> Int4,
         tag_id -> Int4,
+    }
+}
+
+diesel::table! {
+    roles (id) {
+        id -> Int4,
+        #[max_length = 15]
+        title -> Nullable<Varchar>,
     }
 }
 
@@ -157,9 +180,9 @@ diesel::table! {
         icon -> Nullable<Varchar>,
         #[max_length = 50]
         color -> Nullable<Varchar>,
+        parent_id -> Nullable<Int4>,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
-        parent_id -> Nullable<Int4>,
     }
 }
 
@@ -170,13 +193,16 @@ diesel::table! {
         email -> Varchar,
         #[max_length = 255]
         password_hash -> Varchar,
+        role_id -> Int4,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
 diesel::joinable!(blogposts -> categories (category_slug));
 diesel::joinable!(blogposts -> users (author_uuid));
+diesel::joinable!(comments -> users (author_uuid));
 diesel::joinable!(experiences_tags -> experiences (experience_id));
 diesel::joinable!(experiences_tags -> tags (tag_id));
 diesel::joinable!(project_blocks -> projects (project_id));
@@ -186,10 +212,12 @@ diesel::joinable!(projects -> project_statuses (project_status));
 diesel::joinable!(projects -> project_types (project_type));
 diesel::joinable!(projects_tags -> projects (project_id));
 diesel::joinable!(projects_tags -> tags (tag_id));
+diesel::joinable!(users -> roles (role_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     blogposts,
     categories,
+    comments,
     experiences,
     experiences_tags,
     project_ai_usage,
@@ -199,6 +227,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     project_types,
     projects,
     projects_tags,
+    roles,
     tags,
     users,
 );

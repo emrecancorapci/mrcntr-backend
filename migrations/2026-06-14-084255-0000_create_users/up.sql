@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS users (
     --- Dates
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMPTZ
 )
