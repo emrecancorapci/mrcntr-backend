@@ -7,8 +7,12 @@ CREATE TABLE IF NOT EXISTS tags (
     proficiency SMALLINT,
     icon VARCHAR(50),
     color VARCHAR(50),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- References
     parent_id INT REFERENCES tags(id) ON DELETE
-    SET NULL
+    SET NULL,
+
+    -- Dates
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
