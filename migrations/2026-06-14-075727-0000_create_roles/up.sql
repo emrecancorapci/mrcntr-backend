@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS roles (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(15)
+    title VARCHAR(15) NOT NULL
 );
 
 INSERT INTO roles

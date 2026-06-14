@@ -160,7 +160,7 @@ diesel::table! {
     roles (id) {
         id -> Int4,
         #[max_length = 15]
-        title -> Nullable<Varchar>,
+        title -> Varchar,
     }
 }
 
