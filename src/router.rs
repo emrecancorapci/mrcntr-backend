@@ -1,21 +1,25 @@
 use actix_web::{middleware::from_fn, web};
 
-use crate::{
-    middlewares::auth::auth_middleware,
-    modules::{auth, categories, experiences, experiences_tags, tags, users},
-};
+use crate::{middlewares::auth::auth_middleware, modules::*};
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api").service(
+            //
+            // V1
+            //
             web::scope("/v1")
+                //
                 // PUBLIC
+                //
                 .service(
                     web::scope("/auth")
                         .service(auth::login)
                         .service(auth::register),
                 )
+                //
                 // PARTLY PROTECTED
+                //
                 .service(
                     web::scope("/experiences")
                         .service(experiences::many)
@@ -52,7 +56,21 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                                 .service(categories::delete),
                         ),
                 )
+                .service(
+                    web::scope("/projects")
+                        .service(projects::many)
+                        .service(projects::one)
+                        .service(
+                            web::scope("")
+                                .wrap(from_fn(auth_middleware))
+                                .service(projects::insert)
+                                .service(projects::update)
+                                .service(projects::delete),
+                        ),
+                )
+                //
                 // FULLY PROTECTED
+                //
                 .service(
                     web::scope("/user")
                         .wrap(from_fn(auth_middleware))
