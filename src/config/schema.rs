@@ -134,14 +134,14 @@ diesel::table! {
         title -> Varchar,
         project_description -> Text,
         content -> Text,
-        year_created_at -> Nullable<Int2>,
+        year_created_at -> Int2,
         #[max_length = 50]
         latest_version -> Nullable<Varchar>,
-        project_status -> Nullable<Int4>,
-        project_type -> Nullable<Int4>,
-        ai_usage -> Nullable<Int4>,
-        is_featured -> Nullable<Bool>,
-        is_visible -> Nullable<Bool>,
+        project_status_id -> Nullable<Int4>,
+        project_type_id -> Nullable<Int4>,
+        project_ai_usage_id -> Nullable<Int4>,
+        is_featured -> Bool,
+        is_visible -> Bool,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         published_at -> Nullable<Timestamptz>,
@@ -207,9 +207,9 @@ diesel::joinable!(experiences_tags -> experiences (experience_id));
 diesel::joinable!(experiences_tags -> tags (tag_id));
 diesel::joinable!(project_blocks -> projects (project_id));
 diesel::joinable!(project_links -> projects (project_id));
-diesel::joinable!(projects -> project_ai_usage (ai_usage));
-diesel::joinable!(projects -> project_statuses (project_status));
-diesel::joinable!(projects -> project_types (project_type));
+diesel::joinable!(projects -> project_ai_usage (project_ai_usage_id));
+diesel::joinable!(projects -> project_statuses (project_status_id));
+diesel::joinable!(projects -> project_types (project_type_id));
 diesel::joinable!(projects_tags -> projects (project_id));
 diesel::joinable!(projects_tags -> tags (tag_id));
 diesel::joinable!(users -> roles (role_id));
