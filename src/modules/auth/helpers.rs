@@ -21,9 +21,10 @@ pub fn generate_jwt(uuid: String) -> Result<String, Box<dyn std::error::Error>> 
 }
 
 pub fn decode_jwt(token: String) -> Result<TokenData<Claims>, Error> {
+    let secret_key = std::env::var("SECRET_KEY").expect("SECRET_KEY must be set");
     decode::<Claims>(
         &token,
-        &DecodingKey::from_secret("secret".as_ref()),
+        &DecodingKey::from_secret(&secret_key.into_bytes()),
         &Validation::default(),
     )
 }
