@@ -1,102 +1,55 @@
-use actix_web::{middleware::from_fn, web};
+use crate::{modules::*, resource as r, scope as s};
 
-use crate::{
-    middlewares::auth::{auth_middleware, strict_to},
-    modules::*,
-};
-
-pub fn routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        web::scope("/api").service(
-            //
-            // V1
-            //
-            web::scope("/v1")
-                //
-                // PUBLIC
-                //
-                .service(
-                    web::scope("/auth")
-                        .service(auth::login)
-                        .service(auth::register),
-                )
-                //
-                // PARTLY PROTECTED
-                //
-                .service(
-                    web::scope("/experiences")
-                        .service(experiences::many)
-                        .service(experiences::one)
-                        .service(
-                            web::scope("")
-                                .wrap(from_fn(strict_to(vec!["admin"])))
-                                .wrap(from_fn(auth_middleware))
-                                .service(experiences::insert)
-                                .service(experiences::update)
-                                .service(experiences::delete),
-                        ),
-                )
-                .service(
-                    web::scope("/tags")
-                        .service(tags::many)
-                        .service(tags::one)
-                        .service(
-                            web::scope("")
-                                .wrap(from_fn(strict_to(vec!["admin"])))
-                                .wrap(from_fn(auth_middleware))
-                                .service(tags::insert)
-                                .service(tags::update)
-                                .service(tags::delete),
-                        ),
-                )
-                .service(
-                    web::scope("/categories")
-                        .service(categories::many)
-                        .service(categories::one)
-                        .service(
-                            web::scope("")
-                                .wrap(from_fn(strict_to(vec!["admin"])))
-                                .wrap(from_fn(auth_middleware))
-                                .service(categories::insert)
-                                .service(categories::update)
-                                .service(categories::delete),
-                        ),
-                )
-                .service(
-                    web::scope("/projects")
-                        .service(projects::many)
-                        .service(projects::one)
-                        .service(
-                            web::scope("")
-                                .wrap(from_fn(strict_to(vec!["admin"])))
-                                .wrap(from_fn(auth_middleware))
-                                .service(projects::insert)
-                                .service(projects::update)
-                                .service(projects::delete),
-                        ),
-                )
-                //
-                // FULLY PROTECTED
-                //
-                .service(
-                    web::scope("/user")
-                        .wrap(from_fn(strict_to(vec!["admin"])))
-                        .wrap(from_fn(auth_middleware))
-                        .service(users::many)
-                        .service(users::one)
-                        .service(users::insert)
-                        .service(users::update)
-                        .service(users::delete),
-                )
-                .service(
-                    web::scope("/experiences-tags")
-                        .wrap(from_fn(strict_to(vec!["admin"])))
-                        .wrap(from_fn(auth_middleware))
-                        .service(experiences_tags::insert_one)
-                        .service(experiences_tags::insert_many)
-                        .service(experiences_tags::replace_many_by_experience_id)
-                        .service(experiences_tags::delete),
-                ),
-        ),
-    );
+pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
+    cfg.service(s! {
+        scope: "/api",
+        modules: [ s! {
+            scope: "/v1",
+            modules: [
+                r! {
+                    scope: "/auth",
+                    public: [auth::login, auth::register]
+                },
+                r! {
+                    scope: "/experiences",
+                    public: [experiences::many, experiences::one],
+                    admin: [experiences::insert, experiences::update, experiences::delete]
+                },
+                r! {
+                    scope: "/tags",
+                    public: [tags::many, tags::one],
+                    admin: [tags::insert, tags::update, tags::delete]
+                },
+                r! {
+                    scope: "/categories",
+                    public: [categories::many, categories::one],
+                    admin: [categories::insert, categories::update, categories::delete]
+                },
+                r! {
+                    scope: "/projects",
+                    public: [projects::many, projects::one],
+                    admin: [projects::insert, projects::update, projects::delete]
+                },
+                r! {
+                    scope: "/user",
+                    admin: [
+                        users::many,
+                        users::one,
+                        users::insert,
+                        users::update,
+                        users::delete,
+                    ]
+                },
+                r! {
+                    scope: "/experiences-tags",
+                    admin: [
+                        experiences_tags::insert_one,
+                        experiences_tags::insert_many,
+                        experiences_tags::replace_many_by_experience_id,
+                        experiences_tags::delete
+                    ]
+                },
+            ]
+        }]
+    });
 }

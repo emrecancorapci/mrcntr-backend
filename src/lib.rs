@@ -11,6 +11,7 @@ pub mod middlewares {
 
 mod modules;
 
+pub mod macros;
 pub mod router;
 
 pub use config::db::*;
