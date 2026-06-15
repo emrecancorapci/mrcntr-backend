@@ -5,7 +5,10 @@ use actix_web::{
     error::{ErrorInternalServerError, ErrorUnauthorized},
     middleware::Next,
 };
-use std::io::{Error, ErrorKind};
+use std::{
+    io::{Error, ErrorKind},
+    pin::Pin,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -13,6 +16,7 @@ use crate::{
     modules::{auth::helpers, users},
 };
 
+#[derive(Clone)]
 struct AuthContent {
     user: users::UserResponse,
 }
@@ -84,4 +88,38 @@ pub async fn auth_middleware(
     req.extensions_mut().insert(auth_content);
 
     next.call(req).await
+}
+
+pub fn strict_to<'a, B>(
+    roles: Vec<&'a str>,
+) -> impl Fn(
+    ServiceRequest,
+    Next<B>,
+) -> Pin<Box<dyn Future<Output = Result<ServiceResponse<B>, actix_web::Error>>>>
++ Clone
+where
+    B: MessageBody + 'static,
+{
+    move |req: ServiceRequest, next: Next<B>| {
+        let roles: Vec<String> = roles.iter().map(|r| r.to_string()).collect();
+
+        Box::pin(async move {
+            let auth_content = req
+                .extensions()
+                .get::<AuthContent>()
+                .cloned()
+                .ok_or_else(|| ErrorUnauthorized("Unauthorized: No session found"))?;
+
+            let user_has_role = roles
+                .iter()
+                .any(|role| &Some(role.to_string()) == &auth_content.user.role);
+
+            if !user_has_role {
+                return Err(ErrorUnauthorized("Forbidden: Insufficient permissions"));
+            }
+
+            // 3. Pass request down the pipeline
+            next.call(req).await
+        })
+    }
 }

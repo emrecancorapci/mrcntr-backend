@@ -47,7 +47,7 @@ pub struct UpdateUserBody {
     pub password: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize,Clone)]
 pub struct UserResponse {
     pub uuid: Uuid,
     pub email: String,
