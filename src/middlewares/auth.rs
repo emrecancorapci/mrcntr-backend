@@ -49,8 +49,7 @@ pub async fn auth_middleware(
     })?;
 
     let pool = req
-        .extensions()
-        .get::<actix_web::web::Data<DbPool>>()
+        .app_data::<actix_web::web::Data<DbPool>>()
         .cloned()
         .ok_or_else(|| {
             eprintln!("Database connection failed");
