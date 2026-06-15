@@ -1,6 +1,9 @@
 use actix_web::{middleware::from_fn, web};
 
-use crate::{middlewares::auth::auth_middleware, modules::*};
+use crate::{
+    middlewares::auth::{auth_middleware, strict_to},
+    modules::*,
+};
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -26,6 +29,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                         .service(experiences::one)
                         .service(
                             web::scope("")
+                                .wrap(from_fn(strict_to(vec!["admin"])))
                                 .wrap(from_fn(auth_middleware))
                                 .service(experiences::insert)
                                 .service(experiences::update)
@@ -38,6 +42,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                         .service(tags::one)
                         .service(
                             web::scope("")
+                                .wrap(from_fn(strict_to(vec!["admin"])))
                                 .wrap(from_fn(auth_middleware))
                                 .service(tags::insert)
                                 .service(tags::update)
@@ -50,6 +55,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                         .service(categories::one)
                         .service(
                             web::scope("")
+                                .wrap(from_fn(strict_to(vec!["admin"])))
                                 .wrap(from_fn(auth_middleware))
                                 .service(categories::insert)
                                 .service(categories::update)
@@ -62,6 +68,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                         .service(projects::one)
                         .service(
                             web::scope("")
+                                .wrap(from_fn(strict_to(vec!["admin"])))
                                 .wrap(from_fn(auth_middleware))
                                 .service(projects::insert)
                                 .service(projects::update)
@@ -73,6 +80,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                 //
                 .service(
                     web::scope("/user")
+                        .wrap(from_fn(strict_to(vec!["admin"])))
                         .wrap(from_fn(auth_middleware))
                         .service(users::many)
                         .service(users::one)
@@ -82,6 +90,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                 )
                 .service(
                     web::scope("/experiences-tags")
+                        .wrap(from_fn(strict_to(vec!["admin"])))
                         .wrap(from_fn(auth_middleware))
                         .service(experiences_tags::insert_one)
                         .service(experiences_tags::insert_many)
