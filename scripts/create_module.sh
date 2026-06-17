@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ -z "${1:-}" ]; then
+    echo "Error: Please provide a module name. Example: $0 party-crashes"
+    exit 1
+fi
+
+RAW_INPUT="$1"
+
+SNAKE_INPUT="${RAW_INPUT//-/_}" # Replace hyphens with underscores for snake_case
+MODULE_NAME="${SNAKE_INPUT,,}" # Force entire string lowercase
+
+# Capitalize/PascalCase conversions
+pascal_name=""
+IFS='_ ' read -r -a parts <<< "${MODULE_NAME}"
+for part in "${parts[@]}"; do
+    pascal_name="${pascal_name}${part^}"
+done
+
+# Strip off plural endings (Exams -> Exam, Activities -> Activity)
+if [[ "$pascal_name" == *ies ]]; then
+    MODEL_NAME="${pascal_name%ies}y"
+else
+    MODEL_NAME="${pascal_name%s}"
+fi
+
+create_module() {
+    cat << EOF
+mod handlers;
+mod models;
+pub mod repository;
+
+pub use handlers::*;
+pub use models::*;
+EOF
+}
+
+create_handler() {
+    cat << EOF
+use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
+
+use super::{New$MODEL_NAME, Update$MODEL_NAME, repository};
+use crate::{DbPool, config::error_handler::AppError};
+
+#[get("")]
+pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
+    let data = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
+
+        repository::many(&mut conn).map_err(AppError::from)
+    })
+    .await??;
+        
+    return Ok(HttpResponse::Ok().json(data));
+}
+
+#[get("/{id}")]
+pub async fn one(
+    pool: web::Data<DbPool>,
+    path: web::Path<i32>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+
+    let result = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
+
+        repository::one(&mut conn, id).map_err(AppError::from)
+    })
+    .await??;
+
+    let data = result.ok_or_else(|| AppError::NotFound("$MODEL_NAME not found".to_string()))?;
+
+    return Ok(HttpResponse::Ok().json(data));
+}
+
+#[post("")]
+pub async fn insert(
+    pool: web::Data<DbPool>,
+    body_json: web::Json<New$MODEL_NAME>,
+) -> Result<impl Responder, AppError> {
+    let project = body_json.into_inner();
+
+    let data = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
+
+        repository::insert(&mut conn, project).map_err(AppError::from)
+    })
+    .await??;
+
+    return Ok(HttpResponse::Created().json(data));
+}
+
+#[patch("/{id}")]
+pub async fn update(
+    pool: web::Data<DbPool>,
+    path: web::Path<i32>,
+    body_json: web::Json<Update$MODEL_NAME>
+) -> Result<impl Responder, AppError> {
+    let project = body_json.into_inner();
+    let id = path.into_inner();
+
+    let data = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
+
+        repository::update(&mut conn, id, project).map_err(AppError::from)
+    })
+    .await??;
+
+    return Ok(HttpResponse::Ok().json(data));
+}
+            
+#[delete("/{id}")]
+pub async fn delete(
+    pool: web::Data<DbPool>,
+    path: web::Path<i32>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+
+    let result = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|err| AppError::Internal(err.to_string()))?;
+
+        repository::delete(&mut conn, id).map_err(AppError::from)
+    })
+    .await??;
+
+    let data = result.ok_or_else(|| AppError::NotFound("$MODEL_NAME not found".to_string()))?;
+
+    return Ok(HttpResponse::Ok().json(data));
+}
+EOF
+}
+
+create_models() {
+    cat << EOF
+use crate::config::schema;
+use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
+
+#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+#[diesel(table_name = schema::$MODULE_NAME)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct $MODEL_NAME {
+
+}
+
+#[derive(Insertable, Debug, Clone, Deserialize)]
+#[diesel(table_name = schema::$MODULE_NAME)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct New$MODEL_NAME {
+
+}
+
+#[derive(AsChangeset, Deserialize)]
+#[diesel(table_name = schema::$MODULE_NAME)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Update$MODEL_NAME {
+
+}
+EOF
+}
+
+create_repository() {
+    cat << EOF
+use diesel::{
+    ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper, result::Error,
+};
+
+use super::{New$MODEL_NAME, $MODEL_NAME, Update$MODEL_NAME};
+use crate::{PooledConn, schema::$MODULE_NAME};
+
+pub fn one(conn: &mut PooledConn, id: i32) -> Result<Option<$MODEL_NAME>, Error> {
+    $MODULE_NAME::table
+        .filter($MODULE_NAME::id.eq(id))
+        .first::<$MODEL_NAME>(conn)
+        .optional()
+}
+
+pub fn many(conn: &mut PooledConn) -> Result<Vec<$MODEL_NAME>, Error> {
+    $MODULE_NAME::table
+        .order_by($MODULE_NAME::id.desc())
+        .load::<$MODEL_NAME>(conn)
+}
+
+pub fn insert(conn: &mut PooledConn, project: New$MODEL_NAME) -> Result<$MODEL_NAME, Error> {
+    diesel::insert_into($MODULE_NAME::table)
+        .values(&project)
+        .returning($MODEL_NAME::as_returning())
+        .get_result(conn)
+}
+
+pub fn update(
+    conn: &mut PooledConn,
+    id: i32,
+    project: Update$MODEL_NAME,
+) -> Result<Option<$MODEL_NAME>, Error> {
+    diesel::update($MODULE_NAME::dsl::$MODULE_NAME.find(id))
+        .set(project)
+        .returning($MODEL_NAME::as_returning())
+        .get_result(conn)
+        .optional()
+}
+
+pub fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<$MODEL_NAME>, Error> {
+    diesel::delete($MODULE_NAME::dsl::$MODULE_NAME.filter($MODULE_NAME::id.eq(id)))
+        .returning($MODEL_NAME::as_returning())
+        .get_result(conn)
+        .optional()
+}
+EOF
+}
+
+## Main
+
+mkdir -p "src/modules/$MODULE_NAME"
+create_module > "src/modules/$MODULE_NAME.rs"
+
+create_handler "$MODEL_NAME" > "src/modules/$MODULE_NAME/handlers.rs"
+create_models "$MODEL_NAME" "$MODULE_NAME" > "src/modules/$MODULE_NAME/models.rs"
+create_repository "$MODEL_NAME" "$MODULE_NAME" > "src/modules/$MODULE_NAME/repository.rs"
+
+echo "pub mod $MODULE_NAME;" >> src/modules.rs
+
+## Final Output Response
+echo "$MODEL_NAME ($MODULE_NAME) module created successfully!"
