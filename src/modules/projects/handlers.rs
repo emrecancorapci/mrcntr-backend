@@ -33,7 +33,7 @@ pub async fn one(
     })
     .await??;
 
-    let data = result.ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
+    let data = result.ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
