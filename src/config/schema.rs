@@ -72,7 +72,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    project_ai_usage (id) {
+    project_ai_usages (id) {
         id -> Int4,
         #[max_length = 50]
         title -> Varchar,
@@ -207,7 +207,7 @@ diesel::joinable!(experiences_tags -> experiences (experience_id));
 diesel::joinable!(experiences_tags -> tags (tag_id));
 diesel::joinable!(project_blocks -> projects (project_id));
 diesel::joinable!(project_links -> projects (project_id));
-diesel::joinable!(projects -> project_ai_usage (project_ai_usage_id));
+diesel::joinable!(projects -> project_ai_usages (project_ai_usage_id));
 diesel::joinable!(projects -> project_statuses (project_status_id));
 diesel::joinable!(projects -> project_types (project_type_id));
 diesel::joinable!(projects_tags -> projects (project_id));
@@ -220,7 +220,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     comments,
     experiences,
     experiences_tags,
-    project_ai_usage,
+    project_ai_usages,
     project_blocks,
     project_links,
     project_statuses,
