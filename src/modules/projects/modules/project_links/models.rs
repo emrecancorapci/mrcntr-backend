@@ -1,10 +1,14 @@
-use crate::config::schema;
+use crate::{config::schema, modules::projects::Project};
+
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+#[derive(
+    Queryable, Selectable, Identifiable, Associations, Debug, Clone, Serialize, Deserialize,
+)]
 #[diesel(table_name = schema::project_links)]
+#[diesel(belongs_to(Project))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ProjectLink {
     pub id: i32,
