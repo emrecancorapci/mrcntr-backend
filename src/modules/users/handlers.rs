@@ -18,7 +18,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     })
     .await??;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[get("/{uuid}")]
@@ -42,7 +42,7 @@ pub async fn one(
 
     let data = result.ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[post("")]
@@ -67,7 +67,7 @@ pub async fn insert(
     })
     .await??;
 
-    return Ok(HttpResponse::Created().json(data));
+    Ok(HttpResponse::Created().json(data))
 }
 
 #[patch("/{uuid}")]
@@ -103,7 +103,7 @@ pub async fn update(
 
     let data = result.ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[delete("/{uuid}")]
@@ -127,5 +127,5 @@ pub async fn delete(
 
     let data = result.ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }

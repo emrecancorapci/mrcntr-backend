@@ -19,7 +19,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError>  
     })
     .await??;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[get("/{id}")]
@@ -40,7 +40,7 @@ pub async fn one(
 
     let data = result.ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[post("")]
@@ -51,7 +51,7 @@ pub async fn insert(
     let body = experience_json.into_inner();
     let experience = body.to_new_experience();
 
-    let data = web::block(move || {
+    web::block(move || {
         let mut conn = pool
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
@@ -77,12 +77,12 @@ pub async fn insert(
                     .collect(),
             )?;
 
-            return Ok(());
+            Ok(())
         })
     })
     .await??;
 
-    return Ok(HttpResponse::Created().json(data));
+    Ok(HttpResponse::Created().json(()))
 }
 
 #[patch("/{id}")]
@@ -95,7 +95,7 @@ pub async fn update(
     let experience = body.to_update_experience();
     let id = path.into_inner();
 
-    let data = web::block(move || {
+    web::block(move || {
         let mut conn = pool
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
@@ -124,12 +124,12 @@ pub async fn update(
             )
             .map_err(AppError::from)?;
 
-            return Ok(());
+            Ok(())
         })
     })
     .await??;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(()))
 }
 
 #[delete("/{id}")]
@@ -150,5 +150,5 @@ pub async fn delete(
 
     let data = result.ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }

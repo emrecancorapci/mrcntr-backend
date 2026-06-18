@@ -69,7 +69,7 @@ pub async fn auth_middleware(
             .map_err(|err| Error::new(ErrorKind::ConnectionRefused, err))?
             .ok_or_else(|| Error::new(ErrorKind::NotFound, "User not found"))?;
 
-        return Ok::<users::UserResponse, Error>(user);
+        Ok::<users::UserResponse, Error>(user)
     })
     .await
     .map_err(|_| ErrorInternalServerError("Internal Server Error"))?
@@ -90,8 +90,8 @@ pub async fn auth_middleware(
     next.call(req).await
 }
 
-pub fn strict_to<'a, B>(
-    roles: Vec<&'a str>,
+pub fn strict_to<B>(
+    roles: Vec<&str>,
 ) -> impl Fn(
     ServiceRequest,
     Next<B>,
@@ -112,7 +112,7 @@ where
 
             let user_has_role = roles
                 .iter()
-                .any(|role| &Some(role.to_string()) == &auth_content.user.role);
+                .any(|role| Some(role.to_string()) == auth_content.user.role);
 
             if !user_has_role {
                 return Err(ErrorUnauthorized("Forbidden: Insufficient permissions"));

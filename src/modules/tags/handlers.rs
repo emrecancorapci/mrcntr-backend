@@ -35,7 +35,7 @@ pub async fn one(
 
     let data = result.ok_or_else(|| AppError::NotFound("Tag not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[post("")]
@@ -54,7 +54,7 @@ pub async fn insert(
     })
     .await??;
 
-    return Ok(HttpResponse::Created().json(data));
+    Ok(HttpResponse::Created().json(data))
 }
 
 #[patch("/{id}")]
@@ -75,7 +75,7 @@ pub async fn update(
     })
     .await??;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[delete("/{id}")]
@@ -97,5 +97,5 @@ pub async fn delete(
 
     let data = result.ok_or_else(|| AppError::NotFound("Tag not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }

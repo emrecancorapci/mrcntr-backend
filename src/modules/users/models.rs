@@ -56,14 +56,14 @@ pub struct UserResponse {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl Into<UserResponse> for User {
-    fn into(self) -> UserResponse {
+impl From<User> for UserResponse {
+    fn from(val: User) -> Self {
         UserResponse {
-            uuid: self.uuid,
-            email: self.email.to_string(),
+            uuid: val.uuid,
+            email: val.email.to_string(),
             role: None,
-            created_at: self.created_at,
-            updated_at: self.updated_at,
+            created_at: val.created_at,
+            updated_at: val.updated_at,
         }
     }
 }

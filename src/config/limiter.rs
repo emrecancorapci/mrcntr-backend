@@ -10,8 +10,8 @@ pub fn build_limiter() -> Limiter {
     Limiter::builder(redis_url)
         .key_by(|req: &ServiceRequest| {
             req.get_session()
-                .get(&"session-id")
-                .unwrap_or_else(|_| req.cookie(&"rate-api-id").map(|c| c.to_string()))
+                .get("session-id")
+                .unwrap_or_else(|_| req.cookie("rate-api-id").map(|c| c.to_string()))
         })
         .limit(5000)
         .period(Duration::from_secs(3600)) // 60 minutes

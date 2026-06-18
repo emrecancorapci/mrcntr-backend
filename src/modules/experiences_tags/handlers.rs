@@ -21,7 +21,7 @@ pub async fn insert_one(
     })
     .await??;
 
-    return Ok(HttpResponse::Created().json(data));
+    Ok(HttpResponse::Created().json(data))
 }
 
 #[post("/bulk")]
@@ -49,7 +49,7 @@ pub async fn insert_many(
     })
     .await??;
 
-    return Ok(HttpResponse::Created().json(data));
+    Ok(HttpResponse::Created().json(data))
 }
 
 #[put("/experience/{experience_id}")]
@@ -70,7 +70,7 @@ pub async fn replace_many_by_experience_id(
     })
     .await??;
 
-    return Ok(HttpResponse::Created().json(data));
+    Ok(HttpResponse::Created().json(data))
 }
 
 #[delete("/experience/{experience_id}/tag/{tag_id}")]
@@ -89,5 +89,5 @@ pub async fn delete(
     })
     .await??;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }

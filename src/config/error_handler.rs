@@ -30,26 +30,26 @@ impl ResponseError for AppError {
                 code: None,
             }),
             AppError::Unauthorized(err) => {
-                return HttpResponse::Unauthorized().json(ErrorResponse {
+                HttpResponse::Unauthorized().json(ErrorResponse {
                     error: err.to_string(),
                     code: None,
-                });
+                })
             }
             AppError::Internal(err) => {
                 eprintln!("[SERVER ERROR] Internal failure: {}", err);
 
-                return HttpResponse::InternalServerError().json(ErrorResponse {
+                HttpResponse::InternalServerError().json(ErrorResponse {
                     error: "Internal Server Error".to_string(),
                     code: None,
-                });
+                })
             }
         }
     }
 }
 
-impl Into<HttpResponse> for AppError {
-    fn into(self) -> HttpResponse {
-        self.error_response()
+impl From<AppError> for HttpResponse {
+    fn from(val: AppError) -> Self {
+        val.error_response()
     }
 }
 

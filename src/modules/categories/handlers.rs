@@ -18,7 +18,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError>  
     })
     .await??;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[get("/{slug}")]
@@ -39,7 +39,7 @@ pub async fn one(
 
     let data = result.ok_or_else(|| AppError::NotFound("Tag not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[post("")]
@@ -58,7 +58,7 @@ pub async fn insert(
     })
     .await??;
 
-    return Ok(HttpResponse::Created().json(data));
+    Ok(HttpResponse::Created().json(data))
 }
 
 #[patch("/{slug}")]
@@ -81,7 +81,7 @@ pub async fn update(
 
     let data = result.ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[delete("/{slug}")]
@@ -102,5 +102,5 @@ pub async fn delete(
 
     let data = result.ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
 
-    return Ok(HttpResponse::Ok().json(data));
+    Ok(HttpResponse::Ok().json(data))
 }
