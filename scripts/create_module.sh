@@ -225,9 +225,9 @@ EOF
 mkdir -p "src/modules/$MODULE_NAME"
 create_module > "src/modules/$MODULE_NAME.rs"
 
-create_handler "$MODEL_NAME" > "src/modules/$MODULE_NAME/handlers.rs"
-create_models "$MODEL_NAME" "$MODULE_NAME" > "src/modules/$MODULE_NAME/models.rs"
-create_repository "$MODEL_NAME" "$MODULE_NAME" > "src/modules/$MODULE_NAME/repository.rs"
+create_handler > "src/modules/$MODULE_NAME/handlers.rs"
+create_models > "src/modules/$MODULE_NAME/models.rs"
+create_repository > "src/modules/$MODULE_NAME/repository.rs"
 
 echo "pub mod $MODULE_NAME;" >> src/modules.rs
 
