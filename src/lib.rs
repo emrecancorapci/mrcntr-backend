@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 mod config {
     pub mod error_handler;
     pub mod db;
