@@ -45,7 +45,7 @@ macro_rules! resource {
             )
             .service(
                 actix_web::web::scope("")
-                    .wrap(actix_web::middleware::from_fn($crate::middlewares::auth::strict_to(vec![$crate::modules::auth::ROLE_AUTHOR])))
+                    .wrap(actix_web::middleware::from_fn($crate::middlewares::auth::strict_to(vec![$crate::modules::auth::ROLE_AUTHOR, $crate::modules::auth::ROLE_ADMIN])))
                     .wrap(actix_web::middleware::from_fn($crate::middlewares::auth::auth_middleware))
                     $(.service($author_svc))*
             )

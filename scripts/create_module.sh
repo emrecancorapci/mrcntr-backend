@@ -25,6 +25,8 @@ else
     MODEL_NAME="${pascal_name%s}"
 fi
 
+MOD_FOLDER="src/modules/$MODULE_NAME"
+
 create_module() {
     cat << EOF
 mod handlers;
@@ -144,13 +146,16 @@ EOF
 create_models() {
     cat << EOF
 use crate::config::schema;
+
+use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Identifiable, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::$MODULE_NAME)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct $MODEL_NAME {
+	pub id: i32,
 
 }
 
@@ -173,7 +178,8 @@ EOF
 create_repository() {
     cat << EOF
 use diesel::{
-    ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper, result::Error,
+    BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper,
+	result::Error,
 };
 
 use super::{New$MODEL_NAME, $MODEL_NAME, Update$MODEL_NAME};
@@ -222,12 +228,12 @@ EOF
 
 ## Main
 
-mkdir -p "src/modules/$MODULE_NAME"
-create_module > "src/modules/$MODULE_NAME.rs"
+mkdir -p $MOD_FOLDER
+create_module > "$MOD_FOLDER.rs"
 
-create_handler > "src/modules/$MODULE_NAME/handlers.rs"
-create_models > "src/modules/$MODULE_NAME/models.rs"
-create_repository > "src/modules/$MODULE_NAME/repository.rs"
+create_handler > "$MOD_FOLDER/handlers.rs"
+create_models > "$MOD_FOLDER/models.rs"
+create_repository > "$MOD_FOLDER/repository.rs"
 
 echo "pub mod $MODULE_NAME;" >> src/modules.rs
 
