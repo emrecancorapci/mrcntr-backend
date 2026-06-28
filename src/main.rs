@@ -1,12 +1,16 @@
 use actix_limitation::RateLimiter;
 use actix_web::{App, HttpServer, middleware::Logger, web};
+use mrcntr::AppDatabase;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().ok();
 
-    let pool = mrcntr::establish_connection();
-    let shared_pool = web::Data::new(pool);
+    let db_pool = AppDatabase::db_conn();
+    let shared_db_pool = web::Data::new(db_pool);
+
+    let redis_pool = AppDatabase::redis_conn();
+    let shared_redis_pool = web::Data::new(redis_pool);
 
     let limiter = web::Data::new(mrcntr::build_limiter());
 
@@ -15,7 +19,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(RateLimiter::default())
             .app_data(limiter.clone())
             .wrap(Logger::default())
-            .app_data(shared_pool.clone())
+            .app_data(shared_db_pool.clone())
+            .app_data(shared_redis_pool.clone())
             .configure(mrcntr::router::routes)
     };
 
