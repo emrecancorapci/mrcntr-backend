@@ -9,6 +9,7 @@ actix-session = "0.11.0"
 actix-web = "4.14.0"
 argon2 = { version = "0.6.0-rc.8" }
 chrono = { version = "0.4.45", features = ["serde"] }
+deadpool-redis = { version = "0.23.0", features = ["rt_tokio_1"] }
 diesel = { version = "2.3.10", features = [
     "postgres",
     "chrono",
