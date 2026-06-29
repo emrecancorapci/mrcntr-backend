@@ -16,6 +16,7 @@ diesel = { version = "2.3.10", features = [
     "r2d2",
     "uuid",
 ] }
+diesel-async = { version = "0.9.2", features = ["postgres", "deadpool"] }
 dotenvy = "0.15.7"
 jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
 password-hash = "0.6.1"
