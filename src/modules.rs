@@ -6,3 +6,5 @@ pub mod projects;
 pub mod roles;
 pub mod tags;
 pub mod users;
+pub mod comments;
+pub mod blogposts;
