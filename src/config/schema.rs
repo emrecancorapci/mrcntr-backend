@@ -39,7 +39,7 @@ diesel::table! {
         id -> Int4,
         author_uuid -> Uuid,
         content -> Text,
-        parent_comment -> Int4,
+        parent_comment_id -> Int4,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         deleted_at -> Nullable<Timestamptz>,
