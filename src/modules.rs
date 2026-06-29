@@ -1,7 +1,6 @@
 pub mod auth;
 pub mod categories;
 pub mod experiences;
-pub mod experiences_tags;
 pub mod projects;
 pub mod roles;
 pub mod tags;

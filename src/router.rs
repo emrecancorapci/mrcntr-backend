@@ -1,4 +1,7 @@
-use crate::{modules::projects::modules::*, modules::*, resource as r, scope as s};
+use crate::{
+    modules::{experiences::*, projects::modules::*, *},
+    resource as r, scope as s,
+};
 
 pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.service(s! {

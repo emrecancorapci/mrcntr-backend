@@ -1,15 +1,15 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use diesel::Connection;
 
-use super::{ExperienceInsertBody, ExperienceUpdateBody, repository};
-use crate::{
-    DbPool,
-    config::error_handler::AppError,
-    modules::experiences_tags::{self, ExperienceTag},
+use super::{
+    ExperienceInsertBody, ExperienceUpdateBody,
+    experiences_tags::{self, ExperienceTag},
+    repository,
 };
+use crate::{DbPool, config::error_handler::AppError};
 
 #[get("")]
-pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError>  {
+pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let data = web::block(move || {
         let mut conn = pool
             .get()
@@ -26,7 +26,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError>  
 pub async fn one(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
 
     let result = web::block(move || {
@@ -47,7 +47,7 @@ pub async fn one(
 pub async fn insert(
     pool: web::Data<DbPool>,
     experience_json: web::Json<ExperienceInsertBody>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let body = experience_json.into_inner();
     let experience = body.to_new_experience();
 
@@ -90,7 +90,7 @@ pub async fn update(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
     experience_json: web::Json<ExperienceUpdateBody>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let body = experience_json.into_inner();
     let experience = body.to_update_experience();
     let id = path.into_inner();
@@ -136,7 +136,7 @@ pub async fn update(
 pub async fn delete(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
 
     let result = web::block(move || {
