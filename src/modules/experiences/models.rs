@@ -1,6 +1,6 @@
 use crate::config::schema;
 
-use chrono::{NaiveDate, NaiveDateTime};
+use chrono::{NaiveDate, DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -19,8 +19,8 @@ pub struct Experience {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Insertable, Validate, Clone, Deserialize)]
@@ -35,8 +35,6 @@ pub struct NewExperience {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
 }
 
 #[derive(AsChangeset, Validate, Clone, Deserialize)]
@@ -51,8 +49,7 @@ pub struct UpdateExperience {
     pub location: Option<String>,
     pub start_date: Option<NaiveDate>,
     pub end_date: Option<NaiveDate>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Validate, Deserialize)]
@@ -66,8 +63,6 @@ pub struct ExperienceInsertBody {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
     pub tags: Option<Vec<i32>>,
 }
 
@@ -80,8 +75,6 @@ impl ExperienceInsertBody {
             location: self.location.clone(),
             start_date: self.start_date,
             end_date: self.end_date,
-            created_at: self.created_at,
-            updated_at: self.updated_at,
         }
     }
 }
@@ -97,8 +90,6 @@ pub struct ExperienceUpdateBody {
     pub location: Option<String>,
     pub start_date: Option<NaiveDate>,
     pub end_date: Option<NaiveDate>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
     pub tags: Option<Vec<i32>>,
 }
 
@@ -111,8 +102,7 @@ impl ExperienceUpdateBody {
             location: self.location.clone(),
             start_date: self.start_date,
             end_date: self.end_date,
-            created_at: self.created_at,
-            updated_at: self.updated_at,
+            updated_at: Utc::now(),
         }
     }
 }
