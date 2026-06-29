@@ -6,7 +6,15 @@ use mrcntr::{AppDatabase, AppLimiter};
 async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().ok();
 
-    let db_pool = AppDatabase::db_conn();
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let config = diesel_async::pooled_connection::AsyncDieselConnectionManager::<
+        diesel_async::AsyncPgConnection,
+    >::new(database_url);
+
+    let db_pool = diesel_async::pooled_connection::deadpool::Pool::builder(config)
+        .build()
+        .expect("Failed to create Database connection pool");
+
     let shared_db_pool = web::Data::new(db_pool);
 
     let redis_pool = AppDatabase::redis_conn();
