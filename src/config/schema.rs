@@ -39,7 +39,8 @@ diesel::table! {
         id -> Int4,
         author_uuid -> Uuid,
         content -> Text,
-        parent_comment_id -> Int4,
+        blogpost_id -> Int4,
+        parent_comment_id -> Nullable<Int4>,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         deleted_at -> Nullable<Timestamptz>,
@@ -202,6 +203,7 @@ diesel::table! {
 
 diesel::joinable!(blogposts -> categories (category_slug));
 diesel::joinable!(blogposts -> users (author_uuid));
+diesel::joinable!(comments -> blogposts (blogpost_id));
 diesel::joinable!(comments -> users (author_uuid));
 diesel::joinable!(experiences_tags -> experiences (experience_id));
 diesel::joinable!(experiences_tags -> tags (tag_id));
