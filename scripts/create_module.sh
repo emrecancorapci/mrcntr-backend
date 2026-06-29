@@ -6,6 +6,13 @@ if [ -z "${1:-}" ]; then
     exit 1
 fi
 
+if ((BASH_VERSINFO[0] < 4)); then
+    echo "Error: This script requires Bash 4.0 or higher."
+    echo "You are currently running Bash ${BASH_VERSION}."
+    echo "Please upgrade Bash (e.g., 'brew install bash' on macOS) or update your shebang."
+    exit 1
+fi
+
 RAW_INPUT="$1"
 
 SNAKE_INPUT="${RAW_INPUT//-/_}" # Replace hyphens with underscores for snake_case
