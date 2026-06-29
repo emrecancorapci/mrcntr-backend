@@ -1,7 +1,7 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
 use super::{NewProjectAiUsage, UpdateProjectAiUsage, repository};
-use crate::{DbPool, config::error_handler::AppError, schema::project_ai_usages};
+use crate::{DbPool, config::error_handler::AppError};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
