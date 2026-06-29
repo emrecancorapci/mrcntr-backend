@@ -43,14 +43,14 @@ pub async fn insert(
     pool: web::Data<DbPool>,
     body_json: web::Json<NewProjectLink>,
 ) -> Result<impl Responder, AppError> {
-    let project = body_json.into_inner();
+    let project_link = body_json.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, project).map_err(AppError::from)
+        repository::insert(&mut conn, project_link).map_err(AppError::from)
     })
     .await??;
 

@@ -18,9 +18,9 @@ pub fn many(conn: &mut PooledConn) -> Result<Vec<ProjectAiUsage>, Error> {
         .load::<ProjectAiUsage>(conn)
 }
 
-pub fn insert(conn: &mut PooledConn, project: NewProjectAiUsage) -> Result<ProjectAiUsage, Error> {
+pub fn insert(conn: &mut PooledConn, project_ai_usage: NewProjectAiUsage) -> Result<ProjectAiUsage, Error> {
     diesel::insert_into(project_ai_usages::table)
-        .values(&project)
+        .values(&project_ai_usage)
         .returning(ProjectAiUsage::as_returning())
         .get_result(conn)
 }
@@ -28,10 +28,10 @@ pub fn insert(conn: &mut PooledConn, project: NewProjectAiUsage) -> Result<Proje
 pub fn update(
     conn: &mut PooledConn,
     id: i32,
-    project: UpdateProjectAiUsage,
+    project_ai_usage: UpdateProjectAiUsage,
 ) -> Result<Option<ProjectAiUsage>, Error> {
     diesel::update(project_ai_usages::dsl::project_ai_usages.find(id))
-        .set(project)
+        .set(project_ai_usage)
         .returning(ProjectAiUsage::as_returning())
         .get_result(conn)
         .optional()
