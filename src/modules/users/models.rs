@@ -3,13 +3,18 @@ use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+pub const PASS_MIN_LEN: u8 = 12;
+pub const PASS_MAX_LEN: u8 = 128;
+
+#[derive(Queryable, Selectable, Validate, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::users)]
 #[diesel(belongs_to(Role))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
     pub uuid: Uuid,
+    #[validate(email)]
     pub email: String,
     pub password_hash: String,
     pub role_id: i32,
@@ -27,9 +32,11 @@ pub struct NewUser {
     pub role_id: i32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Validate, Serialize, Deserialize)]
 pub struct NewUserBody {
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = (PASS_MIN_LEN as u64), max = (PASS_MAX_LEN as u64)))]
     pub password: String,
 }
 
@@ -41,19 +48,21 @@ pub struct UpdateUser {
     pub password_hash: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Validate, Serialize, Deserialize)]
 pub struct UpdateUserBody {
+    #[validate(email)]
     pub email: Option<String>,
+    #[validate(length(min = (PASS_MIN_LEN as u64), max = (PASS_MAX_LEN as u64)))]
     pub password: Option<String>,
 }
 
-#[derive(Serialize,Clone)]
+#[derive(Serialize, Clone)]
 pub struct UserResponse {
     pub uuid: Uuid,
     pub email: String,
     pub role: Option<String>,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl From<User> for UserResponse {

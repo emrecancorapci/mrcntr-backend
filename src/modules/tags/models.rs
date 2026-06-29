@@ -8,15 +8,19 @@ use diesel::{
     serialize,
 };
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Validate, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Tag {
     pub id: i32,
+    #[validate(length(min = 1))]
     pub slug: String,
+    #[validate(length(min = 1))]
     pub title: String,
     pub tag_type: Option<TagTypeEnum>,
+    #[validate(range(min = 1))]
     pub proficiency: Option<i16>,
     pub icon: Option<String>,
     pub color: Option<String>,
