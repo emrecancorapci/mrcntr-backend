@@ -3,14 +3,18 @@ use crate::config::schema;
 use chrono::{NaiveDate, NaiveDateTime};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize)]
+#[derive(Queryable, Validate, Selectable, Debug, Clone, Serialize)]
 #[diesel(table_name = schema::experiences)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Experience {
     pub id: i32,
+    #[validate(length(min = 3))]
     pub title: String,
+    #[validate(length(min = 3))]
     pub company_name: String,
+    #[validate(length(min = 3))]
     pub description: String,
     pub location: String,
     pub start_date: NaiveDate,
@@ -19,11 +23,14 @@ pub struct Experience {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Insertable, Clone, Deserialize)]
+#[derive(Insertable, Validate, Clone, Deserialize)]
 #[diesel(table_name = schema::experiences)]
 pub struct NewExperience {
+    #[validate(length(min = 3))]
     pub title: String,
+    #[validate(length(min = 3))]
     pub company_name: String,
+    #[validate(length(min = 3))]
     pub description: String,
     pub location: String,
     pub start_date: NaiveDate,
@@ -32,11 +39,14 @@ pub struct NewExperience {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Insertable, AsChangeset, Clone, Deserialize)]
+#[derive(AsChangeset, Validate, Clone, Deserialize)]
 #[diesel(table_name = schema::experiences)]
 pub struct UpdateExperience {
+    #[validate(length(min = 3))]
     pub title: Option<String>,
+    #[validate(length(min = 3))]
     pub company_name: Option<String>,
+    #[validate(length(min = 3))]
     pub description: Option<String>,
     pub location: Option<String>,
     pub start_date: Option<NaiveDate>,
@@ -45,10 +55,13 @@ pub struct UpdateExperience {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Deserialize)]
+#[derive(Validate, Deserialize)]
 pub struct ExperienceInsertBody {
+    #[validate(length(min = 3))]
     pub title: String,
+    #[validate(length(min = 3))]
     pub company_name: String,
+    #[validate(length(min = 3))]
     pub description: String,
     pub location: String,
     pub start_date: NaiveDate,
@@ -73,10 +86,13 @@ impl ExperienceInsertBody {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Validate, Deserialize)]
 pub struct ExperienceUpdateBody {
+    #[validate(length(min = 3))]
     pub title: Option<String>,
+    #[validate(length(min = 3))]
     pub company_name: Option<String>,
+    #[validate(length(min = 3))]
     pub description: Option<String>,
     pub location: Option<String>,
     pub start_date: Option<NaiveDate>,
