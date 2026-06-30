@@ -50,12 +50,10 @@ pub async fn insert(
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        let blogpost = modules::blogposts::repository::one(&mut conn, comment.blogpost_id)
-            .map_err(AppError::from)?;
-
-        if blogpost.is_none() {
-            return Err(AppError::BadRequest("Blogpost not found".to_string()));
-        }
+        // Check blogpost exist
+        let _ = modules::blogposts::repository::one(&mut conn, comment.blogpost_id)
+            .map_err(AppError::from)?
+            .ok_or_else(|| AppError::NotFound("Blogpost not found".to_string()))?;
 
         repository::insert(&mut conn, comment).map_err(AppError::from)
     })
@@ -80,7 +78,8 @@ pub async fn update(
 
         repository::update(&mut conn, id, comment).map_err(AppError::from)
     })
-    .await??;
+    .await??
+    .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
