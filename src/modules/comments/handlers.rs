@@ -30,7 +30,7 @@ pub async fn one(
     let data = repository::one(&mut conn, id)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
@@ -77,7 +77,7 @@ pub async fn update(
     let data = repository::update(&mut conn, id, comment)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
@@ -97,7 +97,7 @@ pub async fn delete(
     let data = repository::delete(&mut conn, id)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }

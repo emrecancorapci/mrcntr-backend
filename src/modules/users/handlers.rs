@@ -37,7 +37,7 @@ pub async fn one(
     let data = repository::one(&mut conn, uuid)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -97,7 +97,7 @@ pub async fn update(
     let data = repository::update(&mut conn, uuid, update_user)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -120,7 +120,7 @@ pub async fn delete(
     let data = repository::delete(&mut conn, uuid)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
