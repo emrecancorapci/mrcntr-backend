@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     DbPool,
+    config::error_handler::AppError,
     modules::{auth::helpers, users},
 };
 
@@ -60,30 +61,17 @@ pub async fn auth_middleware(
             ErrorInternalServerError("Internal Server Error")
         })?;
 
-    let user_response = actix_web::web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| Error::new(ErrorKind::ConnectionRefused, err))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| Error::new(ErrorKind::ConnectionRefused, err))?;
 
-        let user = users::repository::one(&mut conn, uuid)
-            .map_err(|err| Error::new(ErrorKind::ConnectionRefused, err))?
-            .ok_or_else(|| Error::new(ErrorKind::NotFound, "User not found"))?;
+    let user = users::repository::one(&mut conn, uuid)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| ErrorInternalServerError("Internal Server Error"))?;
 
-        Ok::<users::UserResponse, Error>(user)
-    })
-    .await
-    .map_err(|_| ErrorInternalServerError("Internal Server Error"))?
-    .map_err(|err| match err.kind() {
-        ErrorKind::NotFound => ErrorUnauthorized("Malformed token detected"),
-        _ => {
-            eprintln!("[SERVER ERROR] Internal failure: {}", err);
-            ErrorInternalServerError("Internal Server Error")
-        }
-    })?;
-
-    let auth_content = AuthContent {
-        user: user_response,
-    };
+    let auth_content = AuthContent { user };
 
     req.extensions_mut().insert(auth_content);
 

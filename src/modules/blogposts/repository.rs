@@ -1,32 +1,33 @@
-use diesel::{
-    BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper,
-	result::Error,
-};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
+use diesel_async::RunQueryDsl;
 
-use super::{NewBlogpost, Blogpost, UpdateBlogpost};
+use super::{Blogpost, NewBlogpost, UpdateBlogpost};
 use crate::{PooledConn, schema::blogposts};
 
-pub fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Error> {
+pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Error> {
     blogposts::table
         .filter(blogposts::id.eq(id))
         .first::<Blogpost>(conn)
+        .await
         .optional()
 }
 
-pub fn many(conn: &mut PooledConn) -> Result<Vec<Blogpost>, Error> {
+pub async fn many(conn: &mut PooledConn) -> Result<Vec<Blogpost>, Error> {
     blogposts::table
         .order_by(blogposts::id.desc())
         .load::<Blogpost>(conn)
+        .await
 }
 
-pub fn insert(conn: &mut PooledConn, blogpost: NewBlogpost) -> Result<Blogpost, Error> {
+pub async fn insert(conn: &mut PooledConn, blogpost: NewBlogpost) -> Result<Blogpost, Error> {
     diesel::insert_into(blogposts::table)
         .values(&blogpost)
         .returning(Blogpost::as_returning())
         .get_result(conn)
+        .await
 }
 
-pub fn update(
+pub async fn update(
     conn: &mut PooledConn,
     id: i32,
     blogpost: UpdateBlogpost,
@@ -35,12 +36,14 @@ pub fn update(
         .set(blogpost)
         .returning(Blogpost::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }
 
-pub fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Error> {
+pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Error> {
     diesel::delete(blogposts::dsl::blogposts.filter(blogposts::id.eq(id)))
         .returning(Blogpost::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }

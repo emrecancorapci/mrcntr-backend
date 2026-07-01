@@ -9,14 +9,12 @@ use crate::{
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::many(&mut conn).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -31,16 +29,15 @@ pub async fn one(
         .parse::<uuid::Uuid>()
         .map_err(|_| AppError::BadRequest("Invalid UUID format".to_string()))?;
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::one(&mut conn, uuid).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+    let data = repository::one(&mut conn, uuid)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -58,14 +55,14 @@ pub async fn insert(
         role_id: 3,
     };
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, new_user).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::insert(&mut conn, new_user)
+        .await
+        .map_err(AppError::from)?;
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -92,16 +89,15 @@ pub async fn update(
         password_hash: hash,
     };
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::update(&mut conn, uuid, update_user).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+    let data = repository::update(&mut conn, uuid, update_user)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -116,16 +112,15 @@ pub async fn delete(
         .parse::<uuid::Uuid>()
         .map_err(|_| AppError::BadRequest("Invalid UUID format".to_string()))?;
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::delete(&mut conn, uuid).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+    let data = repository::delete(&mut conn, uuid)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }

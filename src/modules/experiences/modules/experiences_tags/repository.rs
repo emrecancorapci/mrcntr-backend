@@ -1,12 +1,13 @@
 use diesel::{
-    BoolExpressionMethods, Connection, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper,
-    result::Error, upsert::excluded,
+    BoolExpressionMethods, ExpressionMethods, QueryDsl, SelectableHelper, result::Error,
+    upsert::excluded,
 };
+use diesel_async::{AsyncConnection, RunQueryDsl};
 
 use super::ExperienceTag;
 use crate::{PooledConn, schema::experiences_tags};
 
-// pub fn many_by_experience_id(
+// pub async fn many_by_experience_id(
 //     conn: &mut PooledConn,
 //     experience_id: i32,
 // ) -> Result<Vec<ExperienceTag>, Error> {
@@ -15,13 +16,13 @@ use crate::{PooledConn, schema::experiences_tags};
 //         .get_results(conn)
 // }
 
-// pub fn many_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ExperienceTag>, Error> {
+// pub async fn many_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ExperienceTag>, Error> {
 //     experiences_tags::table
 //         .filter(experiences_tags::tag_id.eq(tag_id))
 //         .get_results(conn)
 // }
 
-// pub fn one(
+// pub async fn one(
 //     conn: &mut PooledConn,
 //     tag_id: i32,
 //     experience_id: i32,
@@ -33,11 +34,11 @@ use crate::{PooledConn, schema::experiences_tags};
 //         .optional()
 // }
 
-// pub fn many(conn: &mut PooledConn) -> Result<Vec<ExperienceTag>, Error> {
+// pub async fn many(conn: &mut PooledConn) -> Result<Vec<ExperienceTag>, Error> {
 //     experiences_tags::table.get_results(conn)
 // }
 
-pub fn insert_one(
+pub async fn insert_one(
     conn: &mut PooledConn,
     experience: ExperienceTag,
 ) -> Result<ExperienceTag, Error> {
@@ -48,9 +49,10 @@ pub fn insert_one(
         .set(experiences_tags::sort_order.eq(excluded(experiences_tags::sort_order)))
         .returning(ExperienceTag::as_returning())
         .get_result(conn)
+        .await
 }
 
-pub fn insert_many(
+pub async fn insert_many(
     conn: &mut PooledConn,
     experience: Vec<ExperienceTag>,
 ) -> Result<Vec<ExperienceTag>, Error> {
@@ -61,28 +63,32 @@ pub fn insert_many(
         .set(experiences_tags::sort_order.eq(excluded(experiences_tags::sort_order)))
         .returning(ExperienceTag::as_returning())
         .get_results(conn)
+        .await
 }
 
-pub fn replace_many(
+pub async fn replace_many(
     conn: &mut PooledConn,
     experience_id: i32,
     tags: Vec<ExperienceTag>,
 ) -> Result<Vec<ExperienceTag>, Error> {
-    conn.transaction(|conn| {
+    conn.transaction(async |conn| {
         diesel::delete(
             experiences_tags::dsl::experiences_tags
                 .filter(experiences_tags::experience_id.eq(experience_id)),
         )
-        .execute(conn)?;
+        .execute(conn)
+        .await?;
 
         diesel::insert_into(experiences_tags::table)
             .values(&tags)
             .returning(ExperienceTag::as_returning())
             .get_results(conn)
+            .await
     })
+    .await
 }
 
-// pub fn delete_by_experience_id(
+// pub async fn delete_by_experience_id(
 //     conn: &mut PooledConn,
 //     experience_id: i32,
 // ) -> Result<Vec<ExperienceTag>, Error> {
@@ -94,7 +100,7 @@ pub fn replace_many(
 //     .get_results(conn)
 // }
 
-// pub fn delete_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ExperienceTag>, Error> {
+// pub async fn delete_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ExperienceTag>, Error> {
 //     diesel::delete(
 //         experiences_tags::dsl::experiences_tags.filter(experiences_tags::tag_id.eq(tag_id)),
 //     )
@@ -102,7 +108,7 @@ pub fn replace_many(
 //     .get_results(conn)
 // }
 
-pub fn delete(
+pub async fn delete(
     conn: &mut PooledConn,
     experience_id: i32,
     tag_id: i32,
@@ -116,4 +122,5 @@ pub fn delete(
     )
     .returning(ExperienceTag::as_returning())
     .get_results(conn)
+    .await
 }

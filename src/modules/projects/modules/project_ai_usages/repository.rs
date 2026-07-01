@@ -1,31 +1,36 @@
-use diesel::{
-    ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper, result::Error,
-};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
+use diesel_async::RunQueryDsl;
 
 use super::{NewProjectAiUsage, ProjectAiUsage, UpdateProjectAiUsage};
 use crate::{PooledConn, schema::project_ai_usages};
 
-pub fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage>, Error> {
+pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage>, Error> {
     project_ai_usages::table
         .filter(project_ai_usages::id.eq(id))
         .first::<ProjectAiUsage>(conn)
+        .await
         .optional()
 }
 
-pub fn many(conn: &mut PooledConn) -> Result<Vec<ProjectAiUsage>, Error> {
+pub async fn many(conn: &mut PooledConn) -> Result<Vec<ProjectAiUsage>, Error> {
     project_ai_usages::table
         .order_by(project_ai_usages::id.desc())
         .load::<ProjectAiUsage>(conn)
+        .await
 }
 
-pub fn insert(conn: &mut PooledConn, project_ai_usage: NewProjectAiUsage) -> Result<ProjectAiUsage, Error> {
+pub async fn insert(
+    conn: &mut PooledConn,
+    project_ai_usage: NewProjectAiUsage,
+) -> Result<ProjectAiUsage, Error> {
     diesel::insert_into(project_ai_usages::table)
         .values(&project_ai_usage)
         .returning(ProjectAiUsage::as_returning())
         .get_result(conn)
+        .await
 }
 
-pub fn update(
+pub async fn update(
     conn: &mut PooledConn,
     id: i32,
     project_ai_usage: UpdateProjectAiUsage,
@@ -34,12 +39,14 @@ pub fn update(
         .set(project_ai_usage)
         .returning(ProjectAiUsage::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }
 
-pub fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage>, Error> {
+pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage>, Error> {
     diesel::delete(project_ai_usages::dsl::project_ai_usages.filter(project_ai_usages::id.eq(id)))
         .returning(ProjectAiUsage::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }

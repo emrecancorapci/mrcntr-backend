@@ -1,12 +1,12 @@
 use diesel::{
-    BoolExpressionMethods, Connection, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper,
-    result::Error,
+    BoolExpressionMethods, Connection, ExpressionMethods, QueryDsl, SelectableHelper, result::Error,
 };
+use diesel_async::{AsyncConnection, RunQueryDsl};
 
 use super::ProjectTag;
 use crate::{PooledConn, schema::projects_tags};
 
-// pub fn many_by_project_id(
+// pub async fn many_by_project_id(
 //     conn: &mut PooledConn,
 //     project_id: i32,
 // ) -> Result<Vec<ProjectTag>, Error> {
@@ -15,13 +15,13 @@ use crate::{PooledConn, schema::projects_tags};
 //         .get_results(conn)
 // }
 
-// pub fn many_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ProjectTag>, Error> {
+// pub async fn many_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ProjectTag>, Error> {
 //     projects_tags::table
 //         .filter(projects_tags::tag_id.eq(tag_id))
 //         .get_results(conn)
 // }
 
-// pub fn one(
+// pub async fn one(
 //     conn: &mut PooledConn,
 //     tag_id: i32,
 //     project_id: i32,
@@ -33,11 +33,14 @@ use crate::{PooledConn, schema::projects_tags};
 //         .optional()
 // }
 
-// pub fn many(conn: &mut PooledConn) -> Result<Vec<ProjectTag>, Error> {
+// pub async fn many(conn: &mut PooledConn) -> Result<Vec<ProjectTag>, Error> {
 //     projects_tags::table.get_results(conn)
 // }
 
-pub fn insert_one(conn: &mut PooledConn, project_tag: ProjectTag) -> Result<ProjectTag, Error> {
+pub async fn insert_one(
+    conn: &mut PooledConn,
+    project_tag: ProjectTag,
+) -> Result<ProjectTag, Error> {
     diesel::insert_into(projects_tags::table)
         .values(&project_tag)
         .on_conflict((projects_tags::project_id, projects_tags::tag_id))
@@ -46,9 +49,10 @@ pub fn insert_one(conn: &mut PooledConn, project_tag: ProjectTag) -> Result<Proj
         // .set(projects_tags::sort_order.eq(excluded(projects_tags::sort_order)))
         .returning(ProjectTag::as_returning())
         .get_result(conn)
+        .await
 }
 
-pub fn insert_many(
+pub async fn insert_many(
     conn: &mut PooledConn,
     project_tags: Vec<ProjectTag>,
 ) -> Result<Vec<ProjectTag>, Error> {
@@ -60,27 +64,30 @@ pub fn insert_many(
         // .set(projects_tags::sort_order.eq(excluded(projects_tags::sort_order)))
         .returning(ProjectTag::as_returning())
         .get_results(conn)
+        .await
 }
 
-pub fn replace_many(
+pub async fn replace_many(
     conn: &mut PooledConn,
     project_id: i32,
     tags: Vec<ProjectTag>,
 ) -> Result<Vec<ProjectTag>, Error> {
-    conn.transaction(|conn| {
+    conn.transaction(async |conn| {
         diesel::delete(
             projects_tags::dsl::projects_tags.filter(projects_tags::project_id.eq(project_id)),
         )
-        .execute(conn)?;
+        .execute(conn)
+        .await?;
 
         diesel::insert_into(projects_tags::table)
             .values(&tags)
             .returning(ProjectTag::as_returning())
             .get_results(conn)
-    })
+            .await
+    }).await
 }
 
-// pub fn delete_by_project_id(
+// pub async fn delete_by_project_id(
 //     conn: &mut PooledConn,
 //     project_id: i32,
 // ) -> Result<Vec<ProjectTag>, Error> {
@@ -92,7 +99,7 @@ pub fn replace_many(
 //     .get_results(conn)
 // }
 
-// pub fn delete_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ProjectTag>, Error> {
+// pub async fn delete_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ProjectTag>, Error> {
 //     diesel::delete(
 //         projects_tags::dsl::projects_tags.filter(projects_tags::tag_id.eq(tag_id)),
 //     )
@@ -100,7 +107,7 @@ pub fn replace_many(
 //     .get_results(conn)
 // }
 
-pub fn delete(
+pub async fn delete(
     conn: &mut PooledConn,
     project_id: i32,
     tag_id: i32,
@@ -114,4 +121,5 @@ pub fn delete(
     )
     .returning(ProjectTag::as_returning())
     .get_results(conn)
+    .await
 }

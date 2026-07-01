@@ -5,14 +5,12 @@ use crate::{DbPool, config::error_handler::AppError, modules};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::many(&mut conn).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
@@ -24,16 +22,15 @@ pub async fn one(
 ) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::one(&mut conn, id).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
+    let data = repository::one(&mut conn, id)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
@@ -45,19 +42,20 @@ pub async fn insert(
 ) -> Result<impl Responder, AppError> {
     let comment = body_json.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        // Check blogpost exist
-        let _ = modules::blogposts::repository::one(&mut conn, comment.blogpost_id)
-            .map_err(AppError::from)?
-            .ok_or_else(|| AppError::NotFound("Blogpost not found".to_string()))?;
+    // Check blogpost exist
+    let _ = modules::blogposts::repository::one(&mut conn, comment.blogpost_id)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Blogpost not found".to_string()))?;
 
-        repository::insert(&mut conn, comment).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::insert(&mut conn, comment)
+        .await
+        .map_err(AppError::from)?;
 
     return Ok(HttpResponse::Created().json(data));
 }
@@ -71,15 +69,15 @@ pub async fn update(
     let comment = body_json.into_inner();
     let id = path.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::update(&mut conn, id, comment).map_err(AppError::from)
-    })
-    .await??
-    .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
+    let data = repository::update(&mut conn, id, comment)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
@@ -91,16 +89,15 @@ pub async fn delete(
 ) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::delete(&mut conn, id).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
+    let data = repository::delete(&mut conn, id)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }

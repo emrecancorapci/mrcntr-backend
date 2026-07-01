@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
-use diesel::Connection;
+use diesel_async::AsyncConnection;
 
 use super::{
     ExperienceInsertBody, ExperienceUpdateBody,
@@ -10,14 +10,12 @@ use crate::{DbPool, config::error_handler::AppError};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::many(&mut conn).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -29,16 +27,15 @@ pub async fn one(
 ) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::one(&mut conn, &id).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
+    let data = repository::one(&mut conn, &id)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -51,36 +48,35 @@ pub async fn insert(
     let body = experience_json.into_inner();
     let experience = body.to_new_experience();
 
-    web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        conn.transaction(|t| {
-            let exp = repository::insert(&mut *t, experience)?;
+    conn.transaction(async |t| {
+        let exp = repository::insert(&mut *t, experience).await?;
 
-            if body.tags.is_none() {
-                return Ok::<(), AppError>(());
-            }
+        if body.tags.is_none() {
+            return Ok::<(), AppError>(());
+        }
 
-            experiences_tags::repository::insert_many(
-                &mut *t,
-                body.tags
-                    .unwrap_or_default()
-                    .into_iter()
-                    .enumerate()
-                    .map(|(i, tag_id)| ExperienceTag {
-                        experience_id: exp.id,
-                        tag_id,
-                        sort_order: Some(i as i16),
-                    })
-                    .collect(),
-            )?;
+        experiences_tags::repository::insert_many(
+            &mut *t,
+            body.tags
+                .unwrap_or_default()
+                .into_iter()
+                .enumerate()
+                .map(|(i, tag_id)| ExperienceTag {
+                    experience_id: exp.id,
+                    tag_id,
+                    sort_order: Some(i as i16),
+                })
+                .collect(),
+        )
+        .await?;
 
-            Ok(())
-        })
-    })
-    .await??;
+        Ok(())
+    });
 
     Ok(HttpResponse::Created().json(()))
 }
@@ -95,39 +91,39 @@ pub async fn update(
     let experience = body.to_update_experience();
     let id = path.into_inner();
 
-    web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        conn.transaction(|t| {
-            repository::update(&mut *t, &id, experience)?
-                .ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
+    conn.transaction(async |t| {
+        repository::update(&mut *t, &id, experience)
+            .await?
+            .ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
 
-            if body.tags.is_none() {
-                return Ok::<(), AppError>(());
-            }
+        if body.tags.is_none() {
+            return Ok::<(), AppError>(());
+        }
 
-            experiences_tags::repository::replace_many(
-                &mut *t,
-                id,
-                body.tags
-                    .unwrap_or_default()
-                    .into_iter()
-                    .enumerate()
-                    .map(|(i, tag_id)| ExperienceTag {
-                        experience_id: id,
-                        tag_id,
-                        sort_order: Some(i as i16),
-                    })
-                    .collect(),
-            )
-            .map_err(AppError::from)?;
+        experiences_tags::repository::replace_many(
+            &mut *t,
+            id,
+            body.tags
+                .unwrap_or_default()
+                .into_iter()
+                .enumerate()
+                .map(|(i, tag_id)| ExperienceTag {
+                    experience_id: id,
+                    tag_id,
+                    sort_order: Some(i as i16),
+                })
+                .collect(),
+        )
+        .await
+        .map_err(AppError::from)?;
 
-            Ok(())
-        })
-    })
-    .await??;
+        Ok(())
+    });
 
     Ok(HttpResponse::Ok().json(()))
 }
@@ -139,16 +135,15 @@ pub async fn delete(
 ) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::delete(&mut conn, &id).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
+    let data = repository::delete(&mut conn, &id)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Category not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }

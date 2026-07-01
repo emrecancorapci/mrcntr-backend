@@ -5,15 +5,13 @@ use crate::{DbPool, config::error_handler::AppError};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::many(&mut conn).map_err(AppError::from)
-    })
-    .await??;
-        
+    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
+
     Ok(HttpResponse::Ok().json(data))
 }
 
@@ -24,16 +22,15 @@ pub async fn one(
 ) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::one(&mut conn, id).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("ProjectStatus not found".to_string()))?;
+    let data = repository::one(&mut conn, id)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -45,14 +42,14 @@ pub async fn insert(
 ) -> Result<impl Responder, AppError> {
     let project_status = body_json.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, project_status).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::insert(&mut conn, project_status)
+        .await
+        .map_err(AppError::from)?;
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -61,40 +58,38 @@ pub async fn insert(
 pub async fn update(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-    body_json: web::Json<UpdateProjectStatus>
+    body_json: web::Json<UpdateProjectStatus>,
 ) -> Result<impl Responder, AppError> {
     let project_status = body_json.into_inner();
     let id = path.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::update(&mut conn, id, project_status).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::update(&mut conn, id, project_status)
+        .await
+        .map_err(AppError::from)?;
 
     Ok(HttpResponse::Ok().json(data))
 }
-            
+
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
 ) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-    let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
-
-        repository::delete(&mut conn, id).map_err(AppError::from)
-    })
-    .await??;
-
-    let data = result.ok_or_else(|| AppError::NotFound("ProjectStatus not found".to_string()))?;
+    let data = repository::delete(&mut conn, id)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Project not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }

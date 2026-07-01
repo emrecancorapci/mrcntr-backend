@@ -25,14 +25,14 @@ pub async fn register(
         role_id: 3,
     };
 
-    let user = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, new_user).map_err(AppError::from)
-    })
-    .await??;
+    let user = repository::insert(&mut conn, new_user)
+        .await
+        .map_err(AppError::from)?;
 
     let token = generate_jwt(user.uuid.to_string())?;
 
@@ -46,16 +46,15 @@ pub async fn login(
 ) -> Result<impl Responder, AppError> {
     let login_request = body.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::one_by_email(&mut conn, &login_request.email).map_err(AppError::from)
-    })
-    .await??;
-
-    let user = data.ok_or_else(|| AppError::BadRequest("Credentials are wrong.".to_string()))?;
+    let user = repository::one_by_email(&mut conn, &login_request.email)
+        .await
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::BadRequest("Credentials are wrong.".to_string()))?;
 
     verify_password(&login_request.password, &user.password_hash)?;
 

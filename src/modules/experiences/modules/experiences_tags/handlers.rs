@@ -9,14 +9,15 @@ pub async fn insert_one(
     json: web::Json<ExperienceTag>,
 ) -> Result<impl Responder, AppError> {
     let exp_tag = json.into_inner();
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert_one(&mut conn, exp_tag).map_err(AppError::from)
-    })
-    .await??;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
+
+    let data = repository::insert_one(&mut conn, exp_tag)
+        .await
+        .map_err(AppError::from)?;
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -37,14 +38,14 @@ pub async fn insert_many(
         })
         .collect::<Vec<ExperienceTag>>();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert_many(&mut conn, exps_tags).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::insert_many(&mut conn, exps_tags)
+        .await
+        .map_err(AppError::from)?;
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -58,14 +59,14 @@ pub async fn replace_many_by_experience_id(
     let id = path.into_inner();
     let exp_tag = json.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::replace_many(&mut conn, id, exp_tag).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::replace_many(&mut conn, id, exp_tag)
+        .await
+        .map_err(AppError::from)?;
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -77,14 +78,14 @@ pub async fn delete(
 ) -> Result<impl Responder, AppError> {
     let (exp_id, tag_id) = path.into_inner();
 
-    let data = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|err| AppError::Internal(err.to_string()))?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::delete(&mut conn, exp_id, tag_id).map_err(AppError::from)
-    })
-    .await??;
+    let data = repository::delete(&mut conn, exp_id, tag_id)
+        .await
+        .map_err(AppError::from)?;
 
     Ok(HttpResponse::Ok().json(data))
 }

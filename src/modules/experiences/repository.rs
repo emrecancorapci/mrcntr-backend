@@ -1,31 +1,33 @@
-use diesel::{
-    ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper, result::Error,
-};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
+use diesel_async::RunQueryDsl;
 
 use super::{Experience, NewExperience, UpdateExperience};
 use crate::{PooledConn, schema::experiences};
 
-pub fn one(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
+pub async fn one(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
     experiences::table
         .find(id)
         .first::<Experience>(conn)
+        .await
         .optional()
 }
 
-pub fn many(conn: &mut PooledConn) -> Result<Vec<Experience>, Error> {
+pub async fn many(conn: &mut PooledConn) -> Result<Vec<Experience>, Error> {
     experiences::table
         .order_by(experiences::start_date.desc())
         .load::<Experience>(conn)
+        .await
 }
 
-pub fn insert(conn: &mut PooledConn, experience: NewExperience) -> Result<Experience, Error> {
+pub async fn insert(conn: &mut PooledConn, experience: NewExperience) -> Result<Experience, Error> {
     diesel::insert_into(experiences::table)
         .values(&experience)
         .returning(Experience::as_returning())
         .get_result(conn)
+        .await
 }
 
-pub fn update(
+pub async fn update(
     conn: &mut PooledConn,
     id: &i32,
     experience: UpdateExperience,
@@ -34,12 +36,14 @@ pub fn update(
         .set(experience)
         .returning(Experience::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }
 
-pub fn delete(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
+pub async fn delete(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
     diesel::delete(experiences::dsl::experiences.filter(experiences::id.eq(id)))
         .returning(Experience::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }
