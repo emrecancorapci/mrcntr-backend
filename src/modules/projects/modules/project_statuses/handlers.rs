@@ -70,7 +70,8 @@ pub async fn update(
 
     let data = repository::update(&mut conn, id, project_status)
         .await
-        .map_err(AppError::from)?;
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("ProjectStatus not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }

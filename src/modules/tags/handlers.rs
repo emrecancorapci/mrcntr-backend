@@ -50,6 +50,7 @@ pub async fn insert(
     let data = repository::insert(&mut conn, tag)
         .await
         .map_err(AppError::from)?;
+
     Ok(HttpResponse::Created().json(data))
 }
 
@@ -69,7 +70,9 @@ pub async fn update(
 
     let data = repository::update(&mut conn, &id, tag)
         .await
-        .map_err(AppError::from)?;
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::NotFound("Tag not found".to_string()))?;
+
     Ok(HttpResponse::Ok().json(data))
 }
 
