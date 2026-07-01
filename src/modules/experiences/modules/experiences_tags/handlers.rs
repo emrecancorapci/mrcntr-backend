@@ -1,16 +1,13 @@
 use actix_web::{HttpResponse, Responder, delete, post, put, web};
 
-use super::{ExperienceTag, repository};
-use crate::{
-    DbPool, config::error_handler::AppError,
-    modules::experiences_tags::InsertManyExperienceTagsBody,
-};
+use super::{ExperienceTag, InsertManyExperienceTagsBody, repository};
+use crate::{DbPool, config::error_handler::AppError};
 
 #[post("")]
 pub async fn insert_one(
     pool: web::Data<DbPool>,
     json: web::Json<ExperienceTag>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let exp_tag = json.into_inner();
     let data = web::block(move || {
         let mut conn = pool
@@ -28,7 +25,7 @@ pub async fn insert_one(
 pub async fn insert_many(
     pool: web::Data<DbPool>,
     json: web::Json<InsertManyExperienceTagsBody>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let body = json.into_inner();
     let exps_tags = body
         .tags
@@ -57,7 +54,7 @@ pub async fn replace_many_by_experience_id(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
     json: web::Json<Vec<ExperienceTag>>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let id = path.into_inner();
     let exp_tag = json.into_inner();
 
@@ -77,7 +74,7 @@ pub async fn replace_many_by_experience_id(
 pub async fn delete(
     pool: web::Data<DbPool>,
     path: web::Path<(i32, i32)>,
-) -> Result<impl Responder, AppError>  {
+) -> Result<impl Responder, AppError> {
     let (exp_id, tag_id) = path.into_inner();
 
     let data = web::block(move || {

@@ -1,8 +1,6 @@
 mod handlers;
 mod models;
-mod repository;
-mod modules;
+pub mod repository;
 
 pub use handlers::*;
 pub use models::*;
-pub use modules::experiences_tags;

@@ -6,6 +6,13 @@ if [ -z "${1:-}" ]; then
     exit 1
 fi
 
+if ((BASH_VERSINFO[0] < 4)); then
+    echo "Error: This script requires Bash 4.0 or higher."
+    echo "You are currently running Bash ${BASH_VERSION}."
+    echo "Please upgrade Bash (e.g., 'brew install bash' on macOS) or update your shebang."
+    exit 1
+fi
+
 RAW_INPUT="$1"
 
 SNAKE_INPUT="${RAW_INPUT//-/_}" # Replace hyphens with underscores for snake_case
@@ -24,6 +31,7 @@ if [[ "$pascal_name" == *ies ]]; then
 else
     MODEL_NAME="${pascal_name%s}"
 fi
+VARIABLE_NAME="${MODEL_NAME,,}"
 
 MOD_FOLDER="src/modules/$MODULE_NAME"
 
@@ -85,14 +93,14 @@ pub async fn insert(
     pool: web::Data<DbPool>,
     body_json: web::Json<New$MODEL_NAME>,
 ) -> Result<impl Responder, AppError> {
-    let project = body_json.into_inner();
+    let $VARIABLE_NAME = body_json.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, project).map_err(AppError::from)
+        repository::insert(&mut conn, $VARIABLE_NAME).map_err(AppError::from)
     })
     .await??;
 
@@ -105,7 +113,7 @@ pub async fn update(
     path: web::Path<i32>,
     body_json: web::Json<Update$MODEL_NAME>
 ) -> Result<impl Responder, AppError> {
-    let project = body_json.into_inner();
+    let $VARIABLE_NAME = body_json.into_inner();
     let id = path.into_inner();
 
     let data = web::block(move || {
@@ -113,7 +121,7 @@ pub async fn update(
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::update(&mut conn, id, project).map_err(AppError::from)
+        repository::update(&mut conn, id, $VARIABLE_NAME).map_err(AppError::from)
     })
     .await??;
 
@@ -198,9 +206,9 @@ pub fn many(conn: &mut PooledConn) -> Result<Vec<$MODEL_NAME>, Error> {
         .load::<$MODEL_NAME>(conn)
 }
 
-pub fn insert(conn: &mut PooledConn, project: New$MODEL_NAME) -> Result<$MODEL_NAME, Error> {
+pub fn insert(conn: &mut PooledConn, $VARIABLE_NAME: New$MODEL_NAME) -> Result<$MODEL_NAME, Error> {
     diesel::insert_into($MODULE_NAME::table)
-        .values(&project)
+        .values(&$VARIABLE_NAME)
         .returning($MODEL_NAME::as_returning())
         .get_result(conn)
 }
@@ -208,10 +216,10 @@ pub fn insert(conn: &mut PooledConn, project: New$MODEL_NAME) -> Result<$MODEL_N
 pub fn update(
     conn: &mut PooledConn,
     id: i32,
-    project: Update$MODEL_NAME,
+    $VARIABLE_NAME: Update$MODEL_NAME,
 ) -> Result<Option<$MODEL_NAME>, Error> {
     diesel::update($MODULE_NAME::dsl::$MODULE_NAME.find(id))
-        .set(project)
+        .set($VARIABLE_NAME)
         .returning($MODEL_NAME::as_returning())
         .get_result(conn)
         .optional()

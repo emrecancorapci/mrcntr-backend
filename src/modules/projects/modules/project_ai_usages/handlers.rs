@@ -43,14 +43,14 @@ pub async fn insert(
     pool: web::Data<DbPool>,
     body_json: web::Json<NewProjectAiUsage>,
 ) -> Result<impl Responder, AppError> {
-    let project = body_json.into_inner();
+    let project_ai_usage = body_json.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, project).map_err(AppError::from)
+        repository::insert(&mut conn, project_ai_usage).map_err(AppError::from)
     })
     .await??;
 
@@ -63,7 +63,7 @@ pub async fn update(
     path: web::Path<i32>,
     body_json: web::Json<UpdateProjectAiUsage>
 ) -> Result<impl Responder, AppError> {
-    let project = body_json.into_inner();
+    let project_ai_usage = body_json.into_inner();
     let id = path.into_inner();
 
     let data = web::block(move || {
@@ -71,7 +71,7 @@ pub async fn update(
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::update(&mut conn, id, project).map_err(AppError::from)
+        repository::update(&mut conn, id, project_ai_usage).map_err(AppError::from)
     })
     .await??;
 

@@ -1,4 +1,7 @@
-use crate::{modules::*, modules::projects::modules::*, resource as r, scope as s};
+use crate::{
+    modules::{experiences::*, projects::modules::*, *},
+    resource as r, scope as s,
+};
 
 pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.service(s! {
@@ -31,7 +34,17 @@ pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
                     admin:  [projects::insert, projects::update, projects::delete]
                 },
                 r! {
-                    scope:  "/user",
+                    scope:  "/blogposts",
+                    public: [blogposts::many, blogposts::one],
+                    admin:  [blogposts::insert, blogposts::update, blogposts::delete]
+                },
+                r! {
+                    scope:  "/comments",
+                    public: [comments::insert, comments::update, comments::delete],
+                    admin:  [comments::many, comments::one]
+                },
+                r! {
+                    scope:  "/users",
                     admin:  [
                         users::many,
                         users::one,

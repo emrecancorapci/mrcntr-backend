@@ -1,6 +1,6 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use super::{NewProjectBlock, UpdateProjectBlock, repository};
+use super::{NewBlogpost, UpdateBlogpost, repository};
 use crate::{DbPool, config::error_handler::AppError};
 
 #[get("")]
@@ -14,7 +14,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     })
     .await??;
         
-    Ok(HttpResponse::Ok().json(data))
+    return Ok(HttpResponse::Ok().json(data));
 }
 
 #[get("/{id}")]
@@ -33,37 +33,37 @@ pub async fn one(
     })
     .await??;
 
-    let data = result.ok_or_else(|| AppError::NotFound("ProjectBlock not found".to_string()))?;
+    let data = result.ok_or_else(|| AppError::NotFound("Blogpost not found".to_string()))?;
 
-    Ok(HttpResponse::Ok().json(data))
+    return Ok(HttpResponse::Ok().json(data));
 }
 
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
-    body_json: web::Json<NewProjectBlock>,
+    body_json: web::Json<NewBlogpost>,
 ) -> Result<impl Responder, AppError> {
-    let project_block = body_json.into_inner();
+    let blogpost = body_json.into_inner();
 
     let data = web::block(move || {
         let mut conn = pool
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::insert(&mut conn, project_block).map_err(AppError::from)
+        repository::insert(&mut conn, blogpost).map_err(AppError::from)
     })
     .await??;
 
-    Ok(HttpResponse::Created().json(data))
+    return Ok(HttpResponse::Created().json(data));
 }
 
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-    body_json: web::Json<UpdateProjectBlock>
+    body_json: web::Json<UpdateBlogpost>
 ) -> Result<impl Responder, AppError> {
-    let project_block = body_json.into_inner();
+    let blogpost = body_json.into_inner();
     let id = path.into_inner();
 
     let data = web::block(move || {
@@ -71,11 +71,11 @@ pub async fn update(
             .get()
             .map_err(|err| AppError::Internal(err.to_string()))?;
 
-        repository::update(&mut conn, id, project_block).map_err(AppError::from)
+        repository::update(&mut conn, id, blogpost).map_err(AppError::from)
     })
     .await??;
 
-    Ok(HttpResponse::Ok().json(data))
+    return Ok(HttpResponse::Ok().json(data));
 }
             
 #[delete("/{id}")]
@@ -94,7 +94,7 @@ pub async fn delete(
     })
     .await??;
 
-    let data = result.ok_or_else(|| AppError::NotFound("ProjectBlock not found".to_string()))?;
+    let data = result.ok_or_else(|| AppError::NotFound("Blogpost not found".to_string()))?;
 
-    Ok(HttpResponse::Ok().json(data))
+    return Ok(HttpResponse::Ok().json(data));
 }

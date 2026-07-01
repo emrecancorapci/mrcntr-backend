@@ -1,4 +1,7 @@
 use serde::{Deserialize, Serialize};
+use validator::Validate;
+
+use crate::modules::users::{PASS_MAX_LEN, PASS_MIN_LEN};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -6,9 +9,11 @@ pub struct Claims {
     pub exp: usize,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Validate, Debug, Deserialize)]
 pub struct LoginRequest {
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = (PASS_MIN_LEN as u64), max = (PASS_MAX_LEN as u64)))]
     pub password: String,
 }
 #[derive(Debug, Serialize)]

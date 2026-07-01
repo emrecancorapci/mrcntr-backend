@@ -1,4 +1,5 @@
 #![warn(clippy::all)]
+#![allow(unused_parens)]
 
 mod config {
     pub mod error_handler;

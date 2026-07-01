@@ -7,15 +7,24 @@ use crate::config::schema;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
-#[derive(Queryable, Selectable, Identifiable, Debug, Clone, Serialize, Deserialize)]
+const TITLE_MIN_LEN: u8 = 3;
+const DESC_MIN_LEN: u8 = 3;
+const CONTENT_MIN_LEN: u8 = 3;
+
+#[derive(Queryable, Selectable, Validate, Identifiable, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::projects)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Project {
     pub id: i32,
+    #[validate(length(min = (TITLE_MIN_LEN as u64)))]
     pub title: String,
+    #[validate(length(min = (DESC_MIN_LEN as u64)))]
     pub project_description: String,
+    #[validate(length(min = (CONTENT_MIN_LEN as u64)))]
     pub content: String,
+    #[validate(range(min = 2020))]
     pub year_created_at: i16,
     pub latest_version: Option<String>,
     pub project_status_id: Option<i32>,
@@ -29,13 +38,17 @@ pub struct Project {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Insertable, Validate, Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::projects)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProject {
+    #[validate(length(min = (TITLE_MIN_LEN as u64)))]
     pub title: String,
+    #[validate(length(min = (DESC_MIN_LEN as u64)))]
     pub project_description: String,
+    #[validate(length(min = (CONTENT_MIN_LEN as u64)))]
     pub content: String,
+    #[validate(range(min = 2020))]
     pub year_created_at: i16,
     pub latest_version: Option<String>,
     pub project_status_id: Option<i32>,
@@ -46,13 +59,17 @@ pub struct NewProject {
     pub published_at: Option<DateTime<Utc>>,
 }
 
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, Validate, Deserialize)]
 #[diesel(table_name = schema::projects)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateProject {
+    #[validate(length(min = (TITLE_MIN_LEN as u64)))]
     pub title: Option<String>,
+    #[validate(length(min = (DESC_MIN_LEN as u64)))]
     pub project_description: Option<String>,
+    #[validate(length(min = (CONTENT_MIN_LEN as u64)))]
     pub content: Option<String>,
+    #[validate(range(min = 2020))]
     pub year_created_at: Option<i16>,
     pub latest_version: Option<String>,
     pub project_status_id: Option<i32>,
