@@ -2,10 +2,14 @@
 
 ## Prerequisites
 
-- [rust](https://rust-lang.org/)
+- [rust](https://rust-lang.org/) (rustc, rustup, etc.)
 - [diesel-cli](https://crates.io/crates/diesel_cli)
 - [just](https://just.systems/man/en/) (optional)
 - [watchexec](https://watchexec.github.io/) (optional)
+
+### For macOS
+
+Mac users should update their bash via `brew install bash` command to use `just new-mod`.
 
 ## Just Commands
 
@@ -17,12 +21,10 @@ Runs the project with hot-reloading. Uses `watchexec`.
 just dev
 ```
 
-### Migrations
-
 Creates migration files for `TABLE_NAME`. Alias for `diesel migration generate create_{TABLE_NAME}`.
 
 ```bash
-just gen TABLE_NAME
+just new-mig TABLE_NAME
 ```
 
 Runs all pending migrations. Alias for `diesel migration run`
@@ -31,10 +33,10 @@ Runs all pending migrations. Alias for `diesel migration run`
 just sync
 ```
 
-Alias for `diesel migration`
+Creates a new module in `modules` folder with its handler and resolver function. Only models need to be filled.
 
 ```bash
-just m MIGRATION_COMMANDS
+just new-mod MODULE_NAME
 ```
 
 ### Database
@@ -61,7 +63,7 @@ I decided to follow a monolith modular structure.
     /module_name
       handlers.rs     # Endpoint implementations 
       models.rs       # Models and DTOs
-      repository.rs   # ORM implementations (normally i won't use this but i want to try SeaORM)
+      repository.rs   # ORM implementations (normally i won't use this but i also want to try SeaORM)
     module_name.rs    # Holds imports and exports of the module
     ...
   lib.rs              # Holds all imports and exports instead of using main.rs for it
