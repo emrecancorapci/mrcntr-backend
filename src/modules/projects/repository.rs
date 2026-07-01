@@ -1,7 +1,8 @@
 use diesel::{
-    BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper,
+    BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper,
     result::Error,
 };
+use diesel_async::RunQueryDsl;
 
 use super::{
     MergedProject, NewProject, Project, UpdateProject,
@@ -15,7 +16,7 @@ use crate::{
     schema::{self, projects},
 };
 
-pub fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<MergedProject>, Error> {
+pub async fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<MergedProject>, Error> {
     let project_data: Option<(Project, ProjectStatus, ProjectType, ProjectAiUsage)> =
         projects::table
             .find(project_id)
@@ -23,6 +24,7 @@ pub fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<MergedProjec
             .inner_join(schema::project_types::table)
             .inner_join(schema::project_ai_usages::table)
             .first(conn)
+            .await
             .optional()?;
 
     let (project, status, p_type, ai_usage) = match project_data {
@@ -30,8 +32,12 @@ pub fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<MergedProjec
         None => return Ok(None),
     };
 
-    let blocks = ProjectBlock::belonging_to(&project).load::<ProjectBlock>(conn)?;
-    let links = ProjectLink::belonging_to(&project).load::<ProjectLink>(conn)?;
+    let blocks = ProjectBlock::belonging_to(&project)
+        .load::<ProjectBlock>(conn)
+        .await?;
+    let links = ProjectLink::belonging_to(&project)
+        .load::<ProjectLink>(conn)
+        .await?;
 
     Ok(Some(MergedProject {
         id: project.id,
@@ -55,20 +61,22 @@ pub fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<MergedProjec
     }))
 }
 
-pub fn many(conn: &mut PooledConn) -> Result<Vec<Project>, Error> {
+pub async fn many(conn: &mut PooledConn) -> Result<Vec<Project>, Error> {
     projects::table
         .order_by(projects::id.desc())
         .load::<Project>(conn)
+        .await
 }
 
-pub fn insert(conn: &mut PooledConn, project: NewProject) -> Result<Project, Error> {
+pub async fn insert(conn: &mut PooledConn, project: NewProject) -> Result<Project, Error> {
     diesel::insert_into(projects::table)
         .values(&project)
         .returning(Project::as_returning())
         .get_result(conn)
+        .await
 }
 
-pub fn update(
+pub async fn update(
     conn: &mut PooledConn,
     id: i32,
     project: UpdateProject,
@@ -77,12 +85,14 @@ pub fn update(
         .set(project)
         .returning(Project::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }
 
-pub fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<Project>, Error> {
+pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<Project>, Error> {
     diesel::delete(projects::dsl::projects.filter(projects::id.eq(id)))
         .returning(Project::as_returning())
         .get_result(conn)
+        .await
         .optional()
 }
