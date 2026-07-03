@@ -1,12 +1,13 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
-use diesel_async::AsyncConnection;
+use diesel::{ExpressionMethods, QueryDsl};
+use diesel_async::{AsyncConnection, RunQueryDsl};
 
 use super::{
-    ExperienceInsertBody, ExperienceUpdateBody,
+    ExperienceInsertBody, ExperienceResponse, ExperienceUpdateBody,
     experiences_tags::{self, ExperienceTag},
     repository,
 };
-use crate::{DbPool, config::error_handler::AppError};
+use crate::{DbPool, config::error_handler::AppError, modules::tags::Tag, schema::tags};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -53,32 +54,44 @@ pub async fn insert(
         .await
         .map_err(|err| AppError::Internal(err.to_string()))?;
 
-    conn.transaction(async |t| {
-        let exp = repository::insert(&mut *t, experience).await?;
+    let data = conn
+        .transaction(async |t| {
+            let exp = repository::insert(t, experience).await?;
 
-        if body.tags.is_none() {
-            return Ok::<(), AppError>(());
-        }
+            let mut exp: ExperienceResponse = exp.into();
 
-        experiences_tags::repository::insert_many(
-            &mut *t,
-            body.tags
-                .unwrap_or_default()
-                .into_iter()
-                .enumerate()
-                .map(|(i, tag_id)| ExperienceTag {
-                    experience_id: exp.id,
-                    tag_id,
-                    sort_order: Some(i as i16),
-                })
-                .collect(),
-        )
+            if body.tags.is_none() {
+                return Ok::<ExperienceResponse, AppError>(exp);
+            }
+
+            let tag_ids = body.tags.unwrap_or_default();
+
+            experiences_tags::repository::insert_many(
+                t,
+                (&tag_ids)
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, tag_id)| ExperienceTag {
+                        experience_id: exp.id,
+                        tag_id: *tag_id,
+                        sort_order: Some(i as i16),
+                    })
+                    .collect(),
+            )
+            .await?;
+
+            let tags = tags::table
+                .filter(tags::id.eq_any(tag_ids))
+                .get_results::<Tag>(t)
+                .await?;
+
+            exp.tags = tags;
+
+            Ok(exp)
+        })
         .await?;
 
-        Ok(())
-    });
-
-    Ok(HttpResponse::Created().json(()))
+    Ok(HttpResponse::Created().json(data))
 }
 
 #[patch("/{id}")]
@@ -96,36 +109,50 @@ pub async fn update(
         .await
         .map_err(|err| AppError::Internal(err.to_string()))?;
 
-    conn.transaction(async |t| {
-        repository::update(&mut *t, &id, experience)
-            .await?
-            .ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
+    let data = conn
+        .transaction(async |t| {
+            let exp = repository::update(&mut *t, &id, experience)
+                .await?
+                .ok_or_else(|| AppError::NotFound("Experience not found".to_string()))?;
 
-        if body.tags.is_none() {
-            return Ok::<(), AppError>(());
-        }
+            let mut exp: ExperienceResponse = exp.into();
 
-        experiences_tags::repository::replace_many(
-            &mut *t,
-            id,
-            body.tags
-                .unwrap_or_default()
-                .into_iter()
-                .enumerate()
-                .map(|(i, tag_id)| ExperienceTag {
-                    experience_id: id,
-                    tag_id,
-                    sort_order: Some(i as i16),
-                })
-                .collect(),
-        )
-        .await
-        .map_err(AppError::from)?;
+            if body.tags.is_none() {
+                // TODO: Import existing tags
 
-        Ok(())
-    });
+                return Ok::<ExperienceResponse, AppError>(exp);
+            }
 
-    Ok(HttpResponse::Ok().json(()))
+            let tag_ids = body.tags.unwrap_or_default();
+
+            experiences_tags::repository::replace_many(
+                &mut *t,
+                id,
+                (&tag_ids)
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, tag_id)| ExperienceTag {
+                        experience_id: id,
+                        tag_id: *tag_id,
+                        sort_order: Some(i as i16),
+                    })
+                    .collect(),
+            )
+            .await
+            .map_err(AppError::from)?;
+
+            let tags = tags::table
+                .filter(tags::id.eq_any(tag_ids))
+                .get_results::<Tag>(t)
+                .await?;
+
+            exp.tags = tags;
+
+            Ok::<ExperienceResponse, AppError>(exp)
+        })
+        .await?;
+
+    Ok(HttpResponse::Ok().json(data))
 }
 
 #[delete("/{id}")]

@@ -1,6 +1,6 @@
-use crate::config::schema;
+use crate::{config::schema, modules::tags::Tag};
 
-use chrono::{NaiveDate, DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -103,6 +103,37 @@ impl ExperienceUpdateBody {
             start_date: self.start_date,
             end_date: self.end_date,
             updated_at: Utc::now(),
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct ExperienceResponse {
+    pub id: i32,
+    pub title: String,
+    pub company_name: String,
+    pub description: String,
+    pub location: String,
+    pub start_date: NaiveDate,
+    pub end_date: Option<NaiveDate>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub tags: Vec<Tag>,
+}
+
+impl From<Experience> for ExperienceResponse {
+    fn from(value: Experience) -> Self {
+        ExperienceResponse {
+            id: value.id,
+            title: value.title,
+            company_name: value.company_name,
+            description: value.description,
+            location: value.location,
+            start_date: value.start_date,
+            end_date: value.end_date,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+            tags: Vec::new(),
         }
     }
 }
