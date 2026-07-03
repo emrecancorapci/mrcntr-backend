@@ -9,13 +9,8 @@
 - [X] Rate limiter
 - [X] Redis connection
 - [X] Role based authentication
-- [ ] Async diesel implementation
-- [ ] Db caching for 
-  - [ ] projects (1 month),
-    - [ ] project_* (1 month)
-  - [ ] experiences (1 month),
-  - [ ] tags (1 week),
-  - [ ] blogposts (1 week),
+- [X] Async diesel implementation
+- [X] Error handler overhaul
 - [ ] Complete basic module implementation
   - [ ] Auth
     - [ ] Redis token storage system (limited to one token)
@@ -23,11 +18,18 @@
   - [ ] Experiences
   - [ ] Projects
   - [ ] Users
+- [ ] Redis Caching 
+  - [ ] projects (1 month),
+    - [ ] project_* (1 month)
+  - [ ] experiences (1 month),
+  - [ ] tags (1 week),
+  - [ ] blogposts (1 week),
 
 #### Before Release
 - [ ] Restrict registering
 
 ### v1.1 (Blogpost Update)
+- [ ] Removing repository pattern
 - [ ] Complete blogpost module
 
 ### v1.2 (Interaction Update)
