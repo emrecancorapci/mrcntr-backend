@@ -1,5 +1,5 @@
 use diesel::{
-    BoolExpressionMethods, Connection, ExpressionMethods, QueryDsl, SelectableHelper, result::Error,
+    BoolExpressionMethods, ExpressionMethods, QueryDsl, SelectableHelper, result::Error,
 };
 use diesel_async::{AsyncConnection, RunQueryDsl};
 

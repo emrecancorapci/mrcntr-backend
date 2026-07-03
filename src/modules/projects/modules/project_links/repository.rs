@@ -21,12 +21,12 @@ pub async fn many(conn: &mut PooledConn) -> Result<Vec<ProjectLink>, Error> {
 
 pub async fn insert(
     conn: &mut PooledConn,
-    project_link: NewProjectLink,
-) -> Result<ProjectLink, Error> {
+    project_link: Vec<NewProjectLink>,
+) -> Result<Vec<ProjectLink>, Error> {
     diesel::insert_into(project_links::table)
-        .values(&project_link)
+        .values(project_link)
         .returning(ProjectLink::as_returning())
-        .get_result(conn)
+        .get_results(conn)
         .await
 }
 

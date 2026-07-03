@@ -47,11 +47,14 @@ pub async fn insert(
         .await
         .map_err(|err| AppError::Internal(err.to_string()))?;
 
-    let data = repository::insert(&mut conn, project_link)
+    let data = repository::insert(&mut conn, vec![project_link])
         .await
         .map_err(AppError::from)?;
 
-    Ok(HttpResponse::Created().json(data))
+    match data.into_iter().next() {
+        Some(created_link) => Ok(HttpResponse::Created().json(created_link)),
+        None => Err(AppError::Internal("Error while inserting".to_string())),
+    }
 }
 
 #[patch("/{id}")]

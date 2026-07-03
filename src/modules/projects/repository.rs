@@ -1,11 +1,10 @@
 use diesel::{
-    BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper,
-    result::Error,
+    BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error,
 };
 use diesel_async::RunQueryDsl;
 
 use super::{
-    MergedProject, NewProject, Project, UpdateProject,
+    NewProject, Project, ProjectResponse, UpdateProject,
     modules::{
         project_ai_usages::ProjectAiUsage, project_blocks::ProjectBlock,
         project_links::ProjectLink, project_statuses::ProjectStatus, project_types::ProjectType,
@@ -16,7 +15,7 @@ use crate::{
     schema::{self, projects},
 };
 
-pub async fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<MergedProject>, Error> {
+pub async fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<ProjectResponse>, Error> {
     let project_data: Option<(Project, ProjectStatus, ProjectType, ProjectAiUsage)> =
         projects::table
             .find(project_id)
@@ -39,7 +38,7 @@ pub async fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<Merged
         .load::<ProjectLink>(conn)
         .await?;
 
-    Ok(Some(MergedProject {
+    Ok(Some(ProjectResponse {
         id: project.id,
         title: project.title,
         project_description: project.project_description,
@@ -53,11 +52,13 @@ pub async fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<Merged
         project_ai_usage_id: project.project_ai_usage_id,
         created_at: project.created_at,
         updated_at: project.updated_at,
-        project_type: p_type,
-        project_ai_usage: ai_usage,
+        project_type: Some(p_type),
+        project_ai_usage: Some(ai_usage),
         project_blocks: blocks,
         project_links: links,
-        project_status: status,
+        project_status: Some(status),
+        published_at: project.published_at,
+        deleted_at: project.deleted_at,
     }))
 }
 
@@ -70,7 +71,7 @@ pub async fn many(conn: &mut PooledConn) -> Result<Vec<Project>, Error> {
 
 pub async fn insert(conn: &mut PooledConn, project: NewProject) -> Result<Project, Error> {
     diesel::insert_into(projects::table)
-        .values(&project)
+        .values(project)
         .returning(Project::as_returning())
         .get_result(conn)
         .await
