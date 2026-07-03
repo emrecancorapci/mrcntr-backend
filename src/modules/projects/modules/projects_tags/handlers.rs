@@ -12,7 +12,7 @@ pub async fn insert_one(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::insert_one(&mut conn, project_tag)
         .await
@@ -40,7 +40,7 @@ pub async fn insert_many(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::insert_many(&mut conn, exps_tags)
         .await
@@ -61,7 +61,7 @@ pub async fn replace_many_by_project_id(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::replace_many(&mut conn, id, project_tag)
         .await
@@ -80,7 +80,7 @@ pub async fn delete(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::delete(&mut conn, project_id, tag_id)
         .await

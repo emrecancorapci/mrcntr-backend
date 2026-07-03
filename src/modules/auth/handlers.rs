@@ -28,7 +28,7 @@ pub async fn register(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let user = repository::insert(&mut conn, new_user)
         .await
@@ -49,12 +49,12 @@ pub async fn login(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let user = repository::one_by_email(&mut conn, &login_request.email)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::BadRequest("Credentials are wrong.".to_string()))?;
+        .ok_or_else(|| AppError::bad_request("Credentials are wrong.".to_string()))?;
 
     verify_password(&login_request.password, &user.password_hash)?;
 

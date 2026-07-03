@@ -12,7 +12,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::many(&mut conn).await.map_err(AppError::from)?;
 
@@ -27,17 +27,17 @@ pub async fn one(
     let uuid_str = path.into_inner();
     let uuid = uuid_str
         .parse::<uuid::Uuid>()
-        .map_err(|_| AppError::BadRequest("Invalid UUID format".to_string()))?;
+        .map_err(|_| AppError::bad_request("Invalid UUID format".to_string()))?;
 
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::one(&mut conn, uuid)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("User not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -58,7 +58,7 @@ pub async fn insert(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::insert(&mut conn, new_user)
         .await
@@ -77,7 +77,7 @@ pub async fn update(
     let uuid_str = path.into_inner();
     let uuid = uuid_str
         .parse::<uuid::Uuid>()
-        .map_err(|_| AppError::BadRequest("Invalid UUID format".to_string()))?;
+        .map_err(|_| AppError::bad_request("Invalid UUID format".to_string()))?;
 
     let hash = body
         .password
@@ -92,12 +92,12 @@ pub async fn update(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::update(&mut conn, uuid, update_user)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("User not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -110,17 +110,17 @@ pub async fn delete(
     let uuid_str = path.into_inner();
     let uuid = uuid_str
         .parse::<uuid::Uuid>()
-        .map_err(|_| AppError::BadRequest("Invalid UUID format".to_string()))?;
+        .map_err(|_| AppError::bad_request("Invalid UUID format".to_string()))?;
 
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::delete(&mut conn, uuid)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("User not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }

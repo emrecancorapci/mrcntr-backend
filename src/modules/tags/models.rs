@@ -1,6 +1,7 @@
 use std::io::Write;
 
 use crate::config::schema;
+use chrono::{DateTime, Utc};
 use diesel::{
     deserialize::{FromSql, FromSqlRow},
     expression::AsExpression,
@@ -25,8 +26,8 @@ pub struct Tag {
     pub icon: Option<String>,
     pub color: Option<String>,
     pub parent_id: Option<i32>,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Insertable, Debug, Clone, Serialize, Deserialize)]

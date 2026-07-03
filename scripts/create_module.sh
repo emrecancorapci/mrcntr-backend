@@ -58,7 +58,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::many(&mut conn).await
         .map_err(AppError::from)?;
@@ -76,12 +76,12 @@ pub async fn one(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository:one(&mut conn, id)
 		.await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("$MODEL_NAME not found".to_string()))?
+        .ok_or_else(|| AppError::not_found("$MODEL_NAME not found".to_string()))?
 
     return Ok(HttpResponse::Ok().json(data));
 }
@@ -96,7 +96,7 @@ pub async fn insert(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::insert(&mut conn, $VARIABLE_NAME)
 		.await
@@ -117,12 +117,12 @@ pub async fn update(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::update(&mutconn, id, $VARIABLE_NAME)
 		.await
         .map_err(AppError::from)?
-		.ok_or_else(|| AppError::NotFound("$MODEL_NAME not found".to_string()))?;
+		.ok_or_else(|| AppError::not_found("$MODEL_NAME not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }
@@ -137,12 +137,12 @@ pub async fn delete(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository:delete(&mut conn, id)
 		.await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("$MODEL_NAME not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("$MODEL_NAME not found".to_string()))?;
 
     return Ok(HttpResponse::Ok().json(data));
 }

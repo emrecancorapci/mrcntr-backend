@@ -8,7 +8,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::many(&mut conn).await.map_err(AppError::from)?;
 
@@ -25,12 +25,12 @@ pub async fn one(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::one(&mut conn, id)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("ProjectLink not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("ProjectLink not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -45,7 +45,7 @@ pub async fn insert(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::insert(&mut conn, vec![project_link])
         .await
@@ -53,7 +53,7 @@ pub async fn insert(
 
     match data.into_iter().next() {
         Some(created_link) => Ok(HttpResponse::Created().json(created_link)),
-        None => Err(AppError::Internal("Error while inserting".to_string())),
+        None => Err(AppError::internal("Error while inserting".to_string())),
     }
 }
 
@@ -69,12 +69,12 @@ pub async fn update(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::update(&mut conn, id, project)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("ProjectLink not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("ProjectLink not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -89,12 +89,12 @@ pub async fn delete(
     let mut conn = pool
         .get()
         .await
-        .map_err(|err| AppError::Internal(err.to_string()))?;
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     let data = repository::delete(&mut conn, id)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::NotFound("ProjectLink not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("ProjectLink not found".to_string()))?;
 
     Ok(HttpResponse::Ok().json(data))
 }
