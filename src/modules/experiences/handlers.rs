@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
-use diesel::{ExpressionMethods, QueryDsl};
+use diesel::{BelongingToDsl, ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::{AsyncConnection, RunQueryDsl};
 
 use super::{
@@ -16,7 +16,14 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
+    let exp = repository::many(&mut conn).await.map_err(AppError::from)?;
+
+    let exps_tags = experiences_tags::tags_by_experiences(&mut conn, &exp).await?;
+
+    let data = exp
+        .into_iter()
+        .map(|e| ExperienceResponse::from_experience_with_tags(e, &exps_tags))
+        .collect::<Vec<ExperienceResponse>>();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -33,10 +40,14 @@ pub async fn one(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::one(&mut conn, &id)
+    let exp = repository::one(&mut conn, &id)
         .await
         .map_err(AppError::from)?
         .ok_or_else(|| AppError::not_found("Category not found".to_string()))?;
+
+    let exp_tags = experiences_tags::tags_by_experience(&mut conn, &exp).await?;
+
+    let data = ExperienceResponse::from_experience_with_tags(exp, &exp_tags);
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -61,17 +72,21 @@ pub async fn insert(
             let mut exp: ExperienceResponse = exp.into();
 
             if body.tags.is_none() {
-                return Ok::<ExperienceResponse, AppError>(exp);
+                return Ok(exp);
             }
 
             let tag_ids = body.tags.unwrap_or_default();
+
+            if tag_ids.len() == 0 {
+                return Ok(exp);
+            }
 
             experiences_tags::repository::insert_many(
                 t,
                 (&tag_ids)
                     .into_iter()
                     .enumerate()
-                    .map(|(i, tag_id)| ExperienceTag {
+                    .map(|(i, tag_id)| experiences_tags::ExperienceTag {
                         experience_id: exp.id,
                         tag_id: *tag_id,
                         sort_order: Some(i as i16),
@@ -87,7 +102,7 @@ pub async fn insert(
 
             exp.tags = tags;
 
-            Ok(exp)
+            Ok::<ExperienceResponse, AppError>(exp)
         })
         .await?;
 

@@ -1,11 +1,14 @@
-use crate::{config::schema, modules::tags::Tag};
+use crate::{
+    config::schema,
+    modules::{experiences::experiences_tags::ExperienceTag, tags::Tag},
+};
 
 use chrono::{DateTime, NaiveDate, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Queryable, Validate, Selectable, Debug, Clone, Serialize)]
+#[derive(Queryable, Identifiable, Selectable, Validate, Serialize, PartialEq, Debug, Clone)]
 #[diesel(table_name = schema::experiences)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Experience {
@@ -134,6 +137,30 @@ impl From<Experience> for ExperienceResponse {
             created_at: value.created_at,
             updated_at: value.updated_at,
             tags: Vec::new(),
+        }
+    }
+}
+
+impl ExperienceResponse {
+    pub fn from_experience_with_tags(
+        exp: Experience,
+        exp_tags: &Vec<(ExperienceTag, Tag)>,
+    ) -> ExperienceResponse {
+        ExperienceResponse {
+            id: exp.id,
+            title: exp.title,
+            company_name: exp.company_name,
+            description: exp.description,
+            location: exp.location,
+            start_date: exp.start_date,
+            end_date: exp.end_date,
+            created_at: exp.created_at,
+            updated_at: exp.updated_at,
+            tags: exp_tags
+                .into_iter()
+                .filter(|(et, _)| et.experience_id == exp.id)
+                .map(|(_, t)| t.clone())
+                .collect(),
         }
     }
 }

@@ -1,13 +1,14 @@
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::modules::{experiences::*, tags::*};
 use crate::schema;
 
-#[derive(Identifiable, Insertable, Selectable, Queryable, Associations, Serialize, Deserialize, Debug)]
+#[derive(
+    Identifiable, Insertable, Selectable, Queryable, Associations, Serialize, Deserialize, Debug,
+)]
 #[diesel(table_name = schema::experiences_tags)]
-#[diesel(belongs_to(Experience))]
-#[diesel(belongs_to(Tag))]
+#[diesel(belongs_to(crate::modules::experiences::Experience))]
+#[diesel(belongs_to(crate::modules::tags::Tag))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(primary_key(tag_id, experience_id))]
 pub struct ExperienceTag {

@@ -1,20 +1,37 @@
 use diesel::{
-    BoolExpressionMethods, ExpressionMethods, QueryDsl, SelectableHelper, result::Error,
-    upsert::excluded,
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, QueryDsl, SelectableHelper,
+    result::Error, upsert::excluded,
 };
 use diesel_async::{AsyncConnection, RunQueryDsl};
 
 use super::ExperienceTag;
-use crate::{PooledConn, schema::experiences_tags};
+use crate::{
+    PooledConn,
+    modules::{experiences::Experience, tags::Tag},
+    schema::experiences_tags,
+};
 
-// pub async fn many_by_experience_id(
-//     conn: &mut PooledConn,
-//     experience_id: i32,
-// ) -> Result<Vec<ExperienceTag>, Error> {
-//     experiences_tags::table
-//         .filter(experiences_tags::experience_id.eq(experience_id))
-//         .get_results(conn)
-// }
+pub async fn tags_by_experience(
+    conn: &mut PooledConn,
+    exp: &Experience,
+) -> Result<Vec<(ExperienceTag, Tag)>, Error> {
+    ExperienceTag::belonging_to(&exp)
+        .inner_join(crate::schema::tags::table)
+        .select((ExperienceTag::as_select(), Tag::as_select()))
+        .load::<(ExperienceTag, Tag)>(conn)
+        .await
+}
+
+pub async fn tags_by_experiences(
+    conn: &mut PooledConn,
+    exp: &Vec<Experience>,
+) -> Result<Vec<(ExperienceTag, Tag)>, Error> {
+    ExperienceTag::belonging_to(exp)
+        .inner_join(crate::schema::tags::table)
+        .select((ExperienceTag::as_select(), Tag::as_select()))
+        .load::<(ExperienceTag, Tag)>(conn)
+        .await
+}
 
 // pub async fn many_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ExperienceTag>, Error> {
 //     experiences_tags::table
