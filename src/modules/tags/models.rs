@@ -11,7 +11,7 @@ use diesel::{
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Queryable, Selectable, Validate, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Identifiable, Validate, Serialize, Deserialize, Debug, Clone)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Tag {

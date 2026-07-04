@@ -15,6 +15,14 @@ pub async fn many(conn: &mut PooledConn) -> Result<Vec<Tag>, Error> {
         .await
 }
 
+pub async fn many_by_ids(conn: &mut PooledConn, ids: Vec<i32>) -> Result<Vec<Tag>, Error> {
+    tags::table
+        .filter(tags::id.eq_any(ids))
+        .order_by(tags::id.desc())
+        .load::<Tag>(conn)
+        .await
+}
+
 pub async fn insert(conn: &mut PooledConn, tag: NewTag) -> Result<Tag, Error> {
     diesel::insert_into(tags::table)
         .values(&tag)
