@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS experiences (
     location VARCHAR(255) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
     -- Dates
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMPTZ
 );

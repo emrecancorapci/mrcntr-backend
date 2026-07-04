@@ -1,4 +1,5 @@
 use crate::config::schema;
+use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -11,6 +12,9 @@ pub struct Category {
     pub slug: String,
     #[validate(length(min = 3))]
     pub title: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Deserialize)]

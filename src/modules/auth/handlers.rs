@@ -20,6 +20,10 @@ pub async fn register(
     let hashed_password = hash_password(&login_request.password)?;
 
     let new_user = NewUser {
+        first_name: None,
+        last_name: None,
+        summary: None,
+        image_url: None,
         email: login_request.email,
         password_hash: hashed_password,
         role_id: 3,

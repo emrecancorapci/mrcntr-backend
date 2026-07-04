@@ -15,9 +15,11 @@ pub struct ProjectBlock {
     pub sort_order: i16,
     pub title: String,
     pub content: String,
+    pub is_active: bool,
     pub project_id: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable, Debug, Clone, Deserialize)]
@@ -28,6 +30,7 @@ pub struct NewProjectBlock {
     pub title: String,
     pub content: String,
     pub project_id: i32,
+    pub is_active: bool,
 }
 
 #[derive(AsChangeset, Deserialize)]
@@ -37,4 +40,5 @@ pub struct UpdateProjectBlock {
     pub sort_order: Option<i16>,
     pub title: Option<String>,
     pub content: Option<String>,
+    pub is_active: Option<bool>,
 }

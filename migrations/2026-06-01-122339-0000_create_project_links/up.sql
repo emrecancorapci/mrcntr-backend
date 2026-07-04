@@ -9,5 +9,6 @@ CREATE TABLE IF NOT EXISTS project_links (
 
     -- Dates
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMPTZ
 )

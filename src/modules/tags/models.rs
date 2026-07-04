@@ -1,6 +1,5 @@
-use std::io::Write;
-
 use crate::config::schema;
+
 use chrono::{DateTime, Utc};
 use diesel::{
     deserialize::{FromSql, FromSqlRow},
@@ -9,6 +8,7 @@ use diesel::{
     serialize,
 };
 use serde::{Deserialize, Serialize};
+use std::io::Write;
 use validator::Validate;
 
 #[derive(Queryable, Selectable, Identifiable, Validate, Serialize, Deserialize, Debug, Clone)]
@@ -28,6 +28,7 @@ pub struct Tag {
     pub parent_id: Option<i32>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable, Debug, Clone, Serialize, Deserialize)]
@@ -54,6 +55,7 @@ pub struct UpdateTag {
     pub icon: Option<String>,
     pub color: Option<String>,
     pub parent_id: Option<i32>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(AsExpression, FromSqlRow, Debug, Serialize, Deserialize, Clone)]

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS tags (
     SET NULL,
 
     -- Dates
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMPTZ
 );

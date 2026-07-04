@@ -77,6 +77,8 @@ pub struct UpdateProject {
     pub project_ai_usage_id: Option<i32>,
     pub is_featured: Option<bool>,
     pub is_visible: Option<bool>,
+    pub published_at: Option<DateTime<Utc>>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Serialize)]
@@ -143,6 +145,7 @@ pub struct NewProjectBlockRequest {
     pub title: String,
     #[validate(length(min = 3))]
     pub content: String,
+    pub is_active: bool,
 }
 
 #[derive(Validate, Deserialize, Clone)]

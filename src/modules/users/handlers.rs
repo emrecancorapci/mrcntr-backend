@@ -1,11 +1,11 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use super::{NewUser, NewUserBody, UpdateUser, repository};
 use crate::{
     DbPool,
     config::error_handler::AppError,
     modules::{auth::helpers::hash_password, users::UpdateUserBody},
 };
+use super::{NewUser, NewUserBody, UpdateUser, repository};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -50,6 +50,10 @@ pub async fn insert(
     let body = body.into_inner();
     let hash = hash_password(&body.password).map_err(AppError::from)?;
     let new_user = NewUser {
+        first_name: body.first_name,
+        last_name: body.last_name,
+        summary: body.summary,
+        image_url: body.image_url,
         email: body.email,
         password_hash: hash,
         role_id: 3,
@@ -85,6 +89,12 @@ pub async fn update(
         .transpose()
         .map_err(AppError::from)?;
     let update_user = UpdateUser {
+        first_name: body.first_name,
+        last_name: body.last_name,
+        summary: body.summary,
+        image_url: body.image_url,
+        updated_at: chrono::Utc::now(),
+        deleted_at: body.deleted_at,
         email: body.email,
         password_hash: hash,
     };

@@ -1,4 +1,5 @@
 use crate::config::schema;
+
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -14,6 +15,10 @@ pub const PASS_MAX_LEN: u8 = 128;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
     pub uuid: Uuid,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub summary: Option<String>,
+    pub image_url: Option<String>,
     #[validate(email)]
     pub email: String,
     pub password_hash: String,
@@ -27,6 +32,10 @@ pub struct User {
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewUser {
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub summary: Option<String>,
+    pub image_url: Option<String>,
     pub email: String,
     pub password_hash: String,
     pub role_id: i32,
@@ -34,6 +43,10 @@ pub struct NewUser {
 
 #[derive(Validate, Serialize, Deserialize)]
 pub struct NewUserBody {
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub summary: Option<String>,
+    pub image_url: Option<String>,
     #[validate(email)]
     pub email: String,
     #[validate(length(min = (PASS_MIN_LEN as u64), max = (PASS_MAX_LEN as u64)))]
@@ -44,16 +57,27 @@ pub struct NewUserBody {
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateUser {
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub summary: Option<String>,
+    pub image_url: Option<String>,
     pub email: Option<String>,
     pub password_hash: Option<String>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Validate, Serialize, Deserialize)]
 pub struct UpdateUserBody {
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub summary: Option<String>,
+    pub image_url: Option<String>,
     #[validate(email)]
     pub email: Option<String>,
     #[validate(length(min = (PASS_MIN_LEN as u64), max = (PASS_MAX_LEN as u64)))]
     pub password: Option<String>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Serialize, Clone)]

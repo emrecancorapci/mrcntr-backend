@@ -1,12 +1,12 @@
-use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
-use diesel_async::AsyncConnection;
-
 use super::{
     NewProject, NewProjectRequest, ProjectResponse, UpdateProject,
     modules::{project_blocks, project_links},
     repository,
 };
 use crate::{DbPool, config::error_handler::AppError};
+
+use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
+use diesel_async::AsyncConnection;
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -65,6 +65,7 @@ pub async fn insert(
                     sort_order: b.sort_order,
                     title: b.title,
                     content: b.content,
+                    is_active: b.is_active,
                 })
                 .collect();
 

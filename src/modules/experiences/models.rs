@@ -22,8 +22,10 @@ pub struct Experience {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
+    pub is_active: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable, Validate, Clone, Deserialize)]
@@ -38,6 +40,7 @@ pub struct NewExperience {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
+    pub is_active: bool,
 }
 
 #[derive(AsChangeset, Validate, Clone, Deserialize)]
@@ -52,6 +55,7 @@ pub struct UpdateExperience {
     pub location: Option<String>,
     pub start_date: Option<NaiveDate>,
     pub end_date: Option<NaiveDate>,
+    pub is_active: Option<bool>,
     pub updated_at: DateTime<Utc>,
 }
 
@@ -66,6 +70,7 @@ pub struct ExperienceInsertBody {
     pub location: String,
     pub start_date: NaiveDate,
     pub end_date: Option<NaiveDate>,
+    pub is_active: bool,
     pub tags: Option<Vec<i32>>,
 }
 
@@ -78,6 +83,7 @@ impl ExperienceInsertBody {
             location: self.location.clone(),
             start_date: self.start_date,
             end_date: self.end_date,
+            is_active: self.is_active,
         }
     }
 }
@@ -93,6 +99,7 @@ pub struct ExperienceUpdateBody {
     pub location: Option<String>,
     pub start_date: Option<NaiveDate>,
     pub end_date: Option<NaiveDate>,
+    pub is_active: Option<bool>,
     pub tags: Option<Vec<i32>>,
 }
 
@@ -105,6 +112,7 @@ impl ExperienceUpdateBody {
             location: self.location.clone(),
             start_date: self.start_date,
             end_date: self.end_date,
+            is_active: self.is_active,
             updated_at: Utc::now(),
         }
     }
