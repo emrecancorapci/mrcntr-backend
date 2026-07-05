@@ -104,3 +104,32 @@ impl From<User> for UserResponse {
         }
     }
 }
+
+impl UpdateUser {
+    pub fn from_body(value: UpdateUserBody, password_hash: Option<String>) -> Self {
+        UpdateUser {
+            first_name: value.first_name,
+            last_name: value.last_name,
+            summary: value.summary,
+            image_url: value.image_url,
+            updated_at: chrono::Utc::now(),
+            deleted_at: value.deleted_at,
+            email: value.email,
+            password_hash,
+        }
+    }
+}
+
+impl NewUser {
+    pub fn from_body(value: NewUserBody, password_hash: &str) -> Self {
+        NewUser {
+            first_name: value.first_name,
+            last_name: value.last_name,
+            summary: value.summary,
+            image_url: value.image_url,
+            email: value.email,
+            password_hash: password_hash.to_string(),
+            role_id: 3,
+        }
+    }
+}

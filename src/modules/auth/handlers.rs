@@ -1,11 +1,12 @@
 use super::{
     AuthResponse, LoginRequest,
     helpers::{generate_jwt, hash_password, verify_password},
+    repository,
 };
 use crate::{
     DbPool, REDIS_USER_DATA, REDIS_USER_TOKEN, RedisPool,
     config::error_handler::AppError,
-    modules::users::{NewUser, UserResponse, repository},
+    modules::users::{NewUser, UserResponse},
 };
 
 use actix_web::{HttpResponse, Responder, post, web};

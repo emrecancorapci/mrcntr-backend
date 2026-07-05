@@ -1,11 +1,7 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use crate::{
-    DbPool,
-    config::error_handler::AppError,
-    modules::{auth::helpers::hash_password, users::UpdateUserBody},
-};
-use super::{NewUser, NewUserBody, UpdateUser, repository};
+use super::{NewUser, NewUserBody, UpdateUser, UpdateUserBody, UserResponse, repository};
+use crate::{AppError, DbPool, modules::auth::helpers::hash_password};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -14,7 +10,8 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
+    let users = repository::many(&mut conn).await.map_err(AppError::from)?;
+    let data: Vec<UserResponse> = users.into_iter().map(|u| u.into()).collect();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -34,10 +31,12 @@ pub async fn one(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::one(&mut conn, uuid)
+    let user = repository::one(&mut conn, uuid)
         .await
         .map_err(AppError::from)?
         .ok_or_else(|| AppError::not_found("User not found".to_string()))?;
+
+    let data: UserResponse = user.into();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -49,24 +48,18 @@ pub async fn insert(
 ) -> Result<impl Responder, AppError> {
     let body = body.into_inner();
     let hash = hash_password(&body.password).map_err(AppError::from)?;
-    let new_user = NewUser {
-        first_name: body.first_name,
-        last_name: body.last_name,
-        summary: body.summary,
-        image_url: body.image_url,
-        email: body.email,
-        password_hash: hash,
-        role_id: 3,
-    };
+    let new_user = NewUser::from_body(body, &hash);
 
     let mut conn = pool
         .get()
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::insert(&mut conn, new_user)
+    let user = repository::insert(&mut conn, new_user)
         .await
         .map_err(AppError::from)?;
+
+    let data: UserResponse = user.into();
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -85,29 +78,23 @@ pub async fn update(
 
     let hash = body
         .password
+        .clone()
         .map(|p| hash_password(&p))
         .transpose()
         .map_err(AppError::from)?;
-    let update_user = UpdateUser {
-        first_name: body.first_name,
-        last_name: body.last_name,
-        summary: body.summary,
-        image_url: body.image_url,
-        updated_at: chrono::Utc::now(),
-        deleted_at: body.deleted_at,
-        email: body.email,
-        password_hash: hash,
-    };
+    let update_user = UpdateUser::from_body(body, hash);
 
     let mut conn = pool
         .get()
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::update(&mut conn, uuid, update_user)
+    let user = repository::update(&mut conn, uuid, update_user)
         .await
         .map_err(AppError::from)?
         .ok_or_else(|| AppError::not_found("User not found".to_string()))?;
+
+    let data: UserResponse = user.into();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -127,10 +114,12 @@ pub async fn delete(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::delete(&mut conn, uuid)
+    let user = repository::delete(&mut conn, uuid)
         .await
         .map_err(AppError::from)?
         .ok_or_else(|| AppError::not_found("User not found".to_string()))?;
+
+    let data: UserResponse = user.into();
 
     Ok(HttpResponse::Ok().json(data))
 }
