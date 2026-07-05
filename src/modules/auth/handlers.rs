@@ -56,10 +56,20 @@ pub async fn register(
     redis::pipe()
         .cmd("SET")
         .atomic()
-        .arg(&[format!("{}{}", REDIS_USER_TOKEN, &uuid), token.to_string()])
+        .arg(&[
+            format!("{}{}", REDIS_USER_TOKEN, &uuid),
+            token.to_string(),
+            "EX".to_string(),
+            "86400".to_string(),
+        ])
         .ignore()
         .cmd("SET")
-        .arg(&[format!("{}{}", REDIS_USER_DATA, &uuid), user_response_json])
+        .arg(&[
+            format!("{}{}", REDIS_USER_DATA, &uuid),
+            user_response_json,
+            "EX".to_string(),
+            "86400".to_string(),
+        ])
         .ignore()
         .query_async::<()>(&mut *redis)
         .await
@@ -104,10 +114,20 @@ pub async fn login(
     redis::pipe()
         .cmd("SET")
         .atomic()
-        .arg(&[format!("{}{}", REDIS_USER_TOKEN, &uuid), token.to_string()])
+        .arg(&[
+            format!("{}{}", REDIS_USER_TOKEN, &uuid),
+            token.to_string(),
+            "EX".to_string(),
+            "86400".to_string(),
+        ])
         .ignore()
         .cmd("SET")
-        .arg(&[format!("{}{}", REDIS_USER_DATA, &uuid), user_response_json])
+        .arg(&[
+            format!("{}{}", REDIS_USER_DATA, &uuid),
+            user_response_json,
+            "EX".to_string(),
+            "86400".to_string(),
+        ])
         .ignore()
         .query_async::<()>(&mut *redis)
         .await
