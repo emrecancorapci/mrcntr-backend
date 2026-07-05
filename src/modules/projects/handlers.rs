@@ -7,6 +7,7 @@ use crate::{DbPool, config::error_handler::AppError};
 
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use diesel_async::AsyncConnection;
+use validator::Validate;
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -46,6 +47,8 @@ pub async fn insert(
     body_json: web::Json<NewProjectRequest>,
 ) -> Result<impl Responder, AppError> {
     let project_request = body_json.into_inner();
+
+    project_request.validate()?;
 
     let mut conn = pool
         .get()
@@ -102,6 +105,8 @@ pub async fn update(
 ) -> Result<impl Responder, AppError> {
     let project = body_json.into_inner();
     let id = path.into_inner();
+
+    project.validate()?;
 
     let mut conn = pool
         .get()

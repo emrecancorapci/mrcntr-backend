@@ -10,6 +10,7 @@ use crate::{
 };
 
 use actix_web::{HttpResponse, Responder, post, web};
+use validator::Validate;
 
 #[post("/register")]
 pub async fn register(
@@ -28,6 +29,8 @@ pub async fn register(
         .map_err(|err| AppError::internal(err.to_string()))?;
 
     let login_request = body.into_inner();
+
+    login_request.validate()?;
 
     let hashed_password = hash_password(&login_request.password)?;
 
@@ -82,6 +85,8 @@ pub async fn login(
         .map_err(|err| AppError::internal(err.to_string()))?;
 
     let login_request = body.into_inner();
+
+    login_request.validate()?;
 
     let user = repository::one_by_email(&mut conn, &login_request.email)
         .await

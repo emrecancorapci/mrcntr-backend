@@ -1,7 +1,8 @@
-use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
-
 use super::{NewUser, NewUserBody, UpdateUser, UpdateUserBody, UserResponse, repository};
 use crate::{AppError, DbPool, modules::auth::helpers::hash_password};
+
+use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
+use validator::Validate;
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -47,6 +48,9 @@ pub async fn insert(
     body: web::Json<NewUserBody>,
 ) -> Result<impl Responder, AppError> {
     let body = body.into_inner();
+
+    body.validate()?;
+
     let hash = hash_password(&body.password).map_err(AppError::from)?;
     let new_user = NewUser::from_body(body, &hash);
 
@@ -71,6 +75,9 @@ pub async fn update(
     body: web::Json<UpdateUserBody>,
 ) -> Result<impl Responder, AppError> {
     let body = body.into_inner();
+
+    body.validate()?;
+
     let uuid_str = path.into_inner();
     let uuid = uuid_str
         .parse::<uuid::Uuid>()
