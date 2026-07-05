@@ -1,5 +1,6 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use diesel_async::AsyncConnection;
+use validator::Validate;
 
 use super::{
     ExperienceInsertBody, ExperienceResponse, ExperienceUpdateBody,
@@ -59,6 +60,8 @@ pub async fn insert(
     let body = experience_json.into_inner();
     let experience = body.to_new_experience();
 
+    experience.validate()?;
+
     let mut conn = pool
         .get()
         .await
@@ -114,6 +117,8 @@ pub async fn update(
     let body = experience_json.into_inner();
     let experience = body.to_update_experience();
     let id = path.into_inner();
+
+    experience.validate()?;
 
     let mut conn = pool
         .get()
