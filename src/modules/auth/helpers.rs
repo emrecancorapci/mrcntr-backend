@@ -6,12 +6,12 @@ use password_hash::phc::PasswordHash;
 
 use crate::modules::auth::Claims;
 
-pub fn generate_jwt(uuid: String) -> Result<String, Box<dyn std::error::Error>> {
+pub fn generate_jwt(uuid: &str) -> Result<String, Box<dyn std::error::Error>> {
     let secret_key = std::env::var("SECRET_KEY").expect("SECRET_KEY must be set");
     let key = EncodingKey::from_secret(secret_key.as_ref());
 
     let claims = Claims {
-        uuid: uuid.clone(),
+        uuid: uuid.to_string(),
         exp: (chrono::Utc::now() + chrono::Duration::hours(24)).timestamp() as usize,
     };
 
@@ -20,7 +20,7 @@ pub fn generate_jwt(uuid: String) -> Result<String, Box<dyn std::error::Error>> 
     Ok(token_str)
 }
 
-pub fn decode_jwt(token: String) -> Result<TokenData<Claims>, Error> {
+pub fn decode_jwt(token: &str) -> Result<TokenData<Claims>, Error> {
     let secret_key = std::env::var("SECRET_KEY").expect("SECRET_KEY must be set");
     decode::<Claims>(
         &token,
