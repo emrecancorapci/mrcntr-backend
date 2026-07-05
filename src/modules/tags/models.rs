@@ -31,27 +31,33 @@ pub struct Tag {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Insertable, Serialize, Validate, Deserialize, Debug, Clone)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewTag {
+    #[validate(length(min = 1))]
     pub slug: String,
+    #[validate(length(min = 1))]
     pub title: String,
-    pub tag_type: Option<TagTypeEnum>,
+    #[validate(range(min = 1))]
     pub proficiency: Option<i16>,
+    pub tag_type: Option<TagTypeEnum>,
     pub icon: Option<String>,
     pub color: Option<String>,
     pub parent_id: Option<i32>,
 }
 
-#[derive(AsChangeset, Debug, Clone, Deserialize)]
+#[derive(AsChangeset, Validate, Deserialize, Debug, Clone)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateTag {
-    pub slug: String,
-    pub title: String,
-    pub tag_type: Option<TagTypeEnum>,
+    #[validate(length(min = 1))]
+    pub slug: Option<String>,
+    #[validate(length(min = 1))]
+    pub title: Option<String>,
+    #[validate(range(min = 1))]
     pub proficiency: Option<i16>,
+    pub tag_type: Option<TagTypeEnum>,
     pub icon: Option<String>,
     pub color: Option<String>,
     pub parent_id: Option<i32>,

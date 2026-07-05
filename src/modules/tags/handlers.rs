@@ -1,4 +1,5 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
+use validator::Validate;
 
 use super::{UpdateTag, repository};
 use crate::{DbPool, config::error_handler::AppError, modules::tags::NewTag};
@@ -42,6 +43,8 @@ pub async fn insert(
 ) -> Result<impl Responder, AppError> {
     let tag = tag_json.into_inner();
 
+    tag.validate()?;
+
     let mut conn = pool
         .get()
         .await
@@ -62,6 +65,8 @@ pub async fn update(
 ) -> Result<impl Responder, AppError> {
     let tag = tag_json.into_inner();
     let id = path.into_inner();
+
+    tag.validate()?;
 
     let mut conn = pool
         .get()
