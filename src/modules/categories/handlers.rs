@@ -1,11 +1,8 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
+use chrono::Utc;
 
-use super::repository;
-use crate::{
-    DbPool,
-    config::error_handler::AppError,
-    modules::categories::{Category, UpdateCategory},
-};
+use super::{CategoryResponse, NewCategory, UpdateCategory, UpdateCategoryRequest, repository};
+use crate::{DbPool, config::error_handler::AppError};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -14,7 +11,13 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
+    let data: Vec<CategoryResponse> = repository::many(&mut conn)
+        .await
+        .map_err(AppError::from)?
+        .into_iter()
+        .map(|c| c.into())
+        .collect();
+
     Ok(HttpResponse::Ok().json(data))
 }
 
@@ -30,27 +33,31 @@ pub async fn one(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::one(&mut conn, &slug)
+    let data: CategoryResponse = repository::one(&mut conn, &slug)
         .await
-        .map_err(AppError::from)?;
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::not_found("Category not found".to_string()))?
+        .into();
+
     Ok(HttpResponse::Ok().json(data))
 }
 
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
-    tag_json: web::Json<Category>,
+    body: web::Json<NewCategory>,
 ) -> Result<impl Responder, AppError> {
-    let tag = tag_json.into_inner();
+    let category = body.into_inner();
 
     let mut conn = pool
         .get()
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::insert(&mut conn, tag)
+    let data: CategoryResponse = repository::insert(&mut conn, category)
         .await
-        .map_err(AppError::from)?;
+        .map_err(AppError::from)?
+        .into();
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -59,9 +66,9 @@ pub async fn insert(
 pub async fn update(
     pool: web::Data<DbPool>,
     path: web::Path<String>,
-    tag_json: web::Json<UpdateCategory>,
+    body: web::Json<UpdateCategoryRequest>,
 ) -> Result<impl Responder, AppError> {
-    let tag = tag_json.into_inner();
+    let category_req = body.into_inner();
     let slug = path.into_inner();
 
     let mut conn = pool
@@ -69,10 +76,17 @@ pub async fn update(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::update(&mut conn, &slug, &tag.title)
+    let category = UpdateCategory {
+        slug: category_req.slug,
+        title: category_req.title,
+        updated_at: Utc::now(),
+    };
+
+    let data: CategoryResponse = repository::update(&mut conn, &slug, category)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::not_found("Category not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("Category not found".to_string()))?
+        .into();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -89,10 +103,11 @@ pub async fn delete(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::delete(&mut conn, &slug)
+    let data: CategoryResponse = repository::delete(&mut conn, &slug)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::not_found("Category not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("Category not found".to_string()))?
+        .into();
 
     Ok(HttpResponse::Ok().json(data))
 }
