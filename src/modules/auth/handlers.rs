@@ -1,6 +1,3 @@
-use actix_web::{HttpResponse, Responder, post, web};
-use redis::AsyncTypedCommands;
-
 use super::{
     AuthResponse, LoginRequest,
     helpers::{generate_jwt, hash_password, verify_password},
@@ -10,6 +7,8 @@ use crate::{
     config::error_handler::AppError,
     modules::users::{NewUser, UserResponse, repository},
 };
+
+use actix_web::{HttpResponse, Responder, post, web};
 
 #[post("/register")]
 pub async fn register(

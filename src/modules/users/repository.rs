@@ -1,4 +1,8 @@
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
+use chrono::{DateTime, Utc};
+use diesel::{
+    BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper,
+    result::Error,
+};
 use diesel_async::RunQueryDsl;
 
 use uuid::Uuid;
@@ -16,6 +20,7 @@ use crate::{
 pub async fn one(conn: &mut PooledConn, uuid: Uuid) -> Result<Option<UserResponse>, Error> {
     users::table
         .find(uuid)
+        .filter(users::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .inner_join(schema::roles::table)
         .select((users::all_columns, roles::all_columns))
         .first::<(User, Role)>(conn)
@@ -31,7 +36,11 @@ pub async fn one(conn: &mut PooledConn, uuid: Uuid) -> Result<Option<UserRespons
 
 pub async fn one_by_email(conn: &mut PooledConn, email: &str) -> Result<Option<User>, Error> {
     users::table
-        .filter(users::email.eq(email))
+        .filter(
+            users::email
+                .eq(email)
+                .and(users::deleted_at.eq(Option::<DateTime<Utc>>::None)),
+        )
         .first::<User>(conn)
         .await
         .optional()
@@ -39,6 +48,7 @@ pub async fn one_by_email(conn: &mut PooledConn, email: &str) -> Result<Option<U
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<UserResponse>, Error> {
     users::table
+        .filter(users::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .order_by(users::created_at.desc())
         .load::<User>(conn)
         .await
