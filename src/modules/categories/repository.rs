@@ -10,7 +10,8 @@ use crate::{
 
 pub async fn one(conn: &mut PooledConn, slug: &str) -> Result<Option<Category>, Error> {
     categories::table
-        .filter(categories::slug.eq(slug))
+        .find(slug)
+        .filter(categories::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .first::<Category>(conn)
         .await
         .optional()
@@ -18,6 +19,7 @@ pub async fn one(conn: &mut PooledConn, slug: &str) -> Result<Option<Category>, 
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Category>, Error> {
     categories::table
+        .filter(categories::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .order_by(categories::slug.desc())
         .load::<Category>(conn)
         .await

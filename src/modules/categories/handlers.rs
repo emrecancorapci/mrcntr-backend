@@ -1,8 +1,9 @@
-use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
-use chrono::Utc;
-
 use super::{CategoryResponse, NewCategory, UpdateCategory, UpdateCategoryRequest, repository};
 use crate::{DbPool, config::error_handler::AppError};
+
+use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
+use chrono::Utc;
+use validator::Validate;
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -49,6 +50,8 @@ pub async fn insert(
 ) -> Result<impl Responder, AppError> {
     let category = body.into_inner();
 
+    category.validate()?;
+
     let mut conn = pool
         .get()
         .await
@@ -70,6 +73,8 @@ pub async fn update(
 ) -> Result<impl Responder, AppError> {
     let category_req = body.into_inner();
     let slug = path.into_inner();
+
+    category_req.validate()?;
 
     let mut conn = pool
         .get()
