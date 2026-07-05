@@ -25,8 +25,11 @@ async fn main() -> std::io::Result<()> {
             .configure(mrcntr::router::routes)
     };
 
-    let ip = "127.0.0.1";
-    let port = 8080;
+    let ip = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(8080);
 
     println!("App listening on http://{}:{}", ip, port);
 
