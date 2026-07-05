@@ -7,6 +7,9 @@ pub type DbPool = Pool<AsyncPgConnection>;
 pub type PooledConn = AsyncPgConnection;
 pub type RedisPool = deadpool_redis::Pool;
 
+pub const REDIS_USER_TOKEN: &str = "users:tokens:";
+pub const REDIS_USER_DATA: &str = "users:data:";
+
 pub struct AppDatabase;
 
 impl AppDatabase {

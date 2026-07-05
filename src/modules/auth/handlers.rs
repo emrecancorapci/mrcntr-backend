@@ -1,20 +1,32 @@
 use actix_web::{HttpResponse, Responder, post, web};
+use redis::AsyncTypedCommands;
 
 use super::{
     AuthResponse, LoginRequest,
     helpers::{generate_jwt, hash_password, verify_password},
 };
 use crate::{
-    DbPool,
+    DbPool, REDIS_USER_DATA, REDIS_USER_TOKEN, RedisPool,
     config::error_handler::AppError,
-    modules::users::{NewUser, repository},
+    modules::users::{NewUser, UserResponse, repository},
 };
 
 #[post("/register")]
 pub async fn register(
     pool: web::Data<DbPool>,
+    redis_pool: web::Data<RedisPool>,
     body: web::Json<LoginRequest>,
 ) -> Result<impl Responder, AppError> {
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::internal(err.to_string()))?;
+
+    let mut redis = redis_pool
+        .get()
+        .await
+        .map_err(|err| AppError::internal(err.to_string()))?;
+
     let login_request = body.into_inner();
 
     let hashed_password = hash_password(&login_request.password)?;
@@ -29,16 +41,26 @@ pub async fn register(
         role_id: 3,
     };
 
-    let mut conn = pool
-        .get()
-        .await
-        .map_err(|err| AppError::internal(err.to_string()))?;
-
-    let user = repository::insert(&mut conn, new_user)
+    let user_response = repository::insert(&mut conn, new_user)
         .await
         .map_err(AppError::from)?;
 
-    let token = generate_jwt(user.uuid.to_string())?;
+    let token = generate_jwt(&user_response.uuid.to_string())?;
+    let uuid = user_response.uuid.to_string();
+
+    let user_response_json = serde_json::to_string(&user_response).map_err(AppError::from)?;
+
+    redis::pipe()
+        .cmd("SET")
+        .atomic()
+        .arg(&[format!("{}{}", REDIS_USER_TOKEN, &uuid), token.to_string()])
+        .ignore()
+        .cmd("SET")
+        .arg(&[format!("{}{}", REDIS_USER_DATA, &uuid), user_response_json])
+        .ignore()
+        .query_async::<()>(&mut *redis)
+        .await
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     Ok(HttpResponse::Ok().json(AuthResponse { token }))
 }
@@ -46,14 +68,20 @@ pub async fn register(
 #[post("/login")]
 pub async fn login(
     pool: web::Data<DbPool>,
+    redis_pool: web::Data<RedisPool>,
     body: web::Json<LoginRequest>,
 ) -> Result<impl Responder, AppError> {
-    let login_request = body.into_inner();
-
     let mut conn = pool
         .get()
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
+
+    let mut redis = redis_pool
+        .get()
+        .await
+        .map_err(|err| AppError::internal(err.to_string()))?;
+
+    let login_request = body.into_inner();
 
     let user = repository::one_by_email(&mut conn, &login_request.email)
         .await
@@ -62,7 +90,23 @@ pub async fn login(
 
     verify_password(&login_request.password, &user.password_hash)?;
 
-    let token = generate_jwt(user.uuid.to_string())?;
+    let uuid = user.uuid.to_string();
+    let token = generate_jwt(&uuid)?;
+
+    let user_response: UserResponse = user.into();
+    let user_response_json = serde_json::to_string(&user_response).map_err(AppError::from)?;
+
+    redis::pipe()
+        .cmd("SET")
+        .atomic()
+        .arg(&[format!("{}{}", REDIS_USER_TOKEN, &uuid), token.to_string()])
+        .ignore()
+        .cmd("SET")
+        .arg(&[format!("{}{}", REDIS_USER_DATA, &uuid), user_response_json])
+        .ignore()
+        .query_async::<()>(&mut *redis)
+        .await
+        .map_err(|err| AppError::internal(err.to_string()))?;
 
     Ok(HttpResponse::Ok().json(AuthResponse { token }))
 }
