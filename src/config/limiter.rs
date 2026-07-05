@@ -8,7 +8,7 @@ pub struct AppLimiter;
 
 impl AppLimiter {
     pub fn build() -> Limiter {
-        let redis_url = std::env::var("REDIS_URL").expect("DATABASE_URL must be set");
+        let redis_url = std::env::var("REDIS_URL").expect("REDIS_URL must be set");
 
         Limiter::builder(redis_url)
             .key_by(|req: &ServiceRequest| {
