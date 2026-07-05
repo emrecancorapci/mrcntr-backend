@@ -40,8 +40,8 @@ pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
                 },
                 r! {
                     scope:  "/comments",
-                    public: [comments::insert, comments::update, comments::delete],
-                    admin:  [comments::many, comments::one]
+                    public: [comments::many, comments::one],
+                    admin:  [comments::insert, comments::update, comments::delete]
                 },
                 r! {
                     scope:  "/users",
