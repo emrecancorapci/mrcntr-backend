@@ -2,10 +2,10 @@
 #![allow(unused_parens)]
 
 mod config {
-    pub mod error_handler;
     pub mod db;
-    pub mod schema;
+    pub mod error_handler;
     pub mod limiter;
+    pub mod schema;
 }
 
 pub mod middlewares {
@@ -18,5 +18,6 @@ pub mod macros;
 pub mod router;
 
 pub use config::db::*;
-pub use config::schema;
+pub use config::error_handler::AppError;
 pub use config::limiter::*;
+pub use config::schema;
