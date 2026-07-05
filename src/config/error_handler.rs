@@ -188,6 +188,18 @@ impl From<actix_web::error::BlockingError> for AppError {
     }
 }
 
+impl From<serde_json::Error> for AppError {
+    fn from(value: serde_json::Error) -> Self {
+        AppError::internal(value.to_string())
+    }
+}
+
+impl From<redis::RedisError> for AppError {
+    fn from(value: redis::RedisError) -> Self {
+        AppError::internal(value.to_string())
+    }
+}
+
 impl From<validator::ValidationErrors> for AppError {
     fn from(value: validator::ValidationErrors) -> Self {
         let errs = value.errors();
