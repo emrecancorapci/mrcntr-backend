@@ -80,7 +80,7 @@ pub struct UpdateUserBody {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserResponse {
     pub uuid: Uuid,
     pub email: String,
@@ -94,7 +94,11 @@ impl From<User> for UserResponse {
         UserResponse {
             uuid: val.uuid,
             email: val.email.to_string(),
-            role: None,
+            role: match val.role_id {
+                1 => Some("admin".to_string()),
+                2 => Some("author".to_string()),
+                _ => Some("user".to_string()),
+            },
             created_at: val.created_at,
             updated_at: val.updated_at,
         }
