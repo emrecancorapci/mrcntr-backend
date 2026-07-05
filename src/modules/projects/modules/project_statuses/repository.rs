@@ -1,12 +1,14 @@
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
-use diesel_async::RunQueryDsl;
-
 use super::{NewProjectStatus, ProjectStatus, UpdateProjectStatus};
 use crate::{PooledConn, schema::project_statuses};
 
+use chrono::{DateTime, Utc};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
+use diesel_async::RunQueryDsl;
+
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectStatus>, Error> {
     project_statuses::table
-        .filter(project_statuses::id.eq(id))
+        .find(id)
+        .filter(project_statuses::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .first::<ProjectStatus>(conn)
         .await
         .optional()
@@ -44,7 +46,8 @@ pub async fn update(
 }
 
 pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectStatus>, Error> {
-    diesel::delete(project_statuses::dsl::project_statuses.filter(project_statuses::id.eq(id)))
+    diesel::update(project_statuses::dsl::project_statuses.find(id))
+        .set(project_statuses::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(ProjectStatus::as_returning())
         .get_result(conn)
         .await

@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
 use diesel_async::RunQueryDsl;
 
@@ -6,7 +7,8 @@ use crate::{PooledConn, schema::comments};
 
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Comment>, Error> {
     comments::table
-        .filter(comments::id.eq(id))
+        .find(id)
+        .filter(comments::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .first::<Comment>(conn)
         .await
         .optional()
@@ -14,6 +16,7 @@ pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Comment>, Erro
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Comment>, Error> {
     comments::table
+        .filter(comments::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .order_by(comments::id.desc())
         .load::<Comment>(conn)
         .await
@@ -41,7 +44,8 @@ pub async fn update(
 }
 
 pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<Comment>, Error> {
-    diesel::delete(comments::dsl::comments.filter(comments::id.eq(id)))
+    diesel::update(comments::dsl::comments.find(id))
+        .set(comments::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(Comment::as_returning())
         .get_result(conn)
         .await

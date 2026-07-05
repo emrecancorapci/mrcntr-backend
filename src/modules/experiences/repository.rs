@@ -45,7 +45,7 @@ pub async fn update(
 
 pub async fn delete(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
     diesel::update(experiences::dsl::experiences.find(id))
-        .set(experiences::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .set(experiences::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(Experience::as_returning())
         .get_result(conn)
         .await

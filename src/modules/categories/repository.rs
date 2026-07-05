@@ -48,7 +48,7 @@ pub async fn update(
 
 pub async fn delete(conn: &mut PooledConn, slug: &str) -> Result<Option<Category>, Error> {
     diesel::update(categories::dsl::categories.find(slug))
-        .set(categories::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .set(categories::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(Category::as_returning())
         .get_result(conn)
         .await

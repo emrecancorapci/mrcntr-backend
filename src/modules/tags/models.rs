@@ -55,7 +55,6 @@ pub struct UpdateTag {
     pub icon: Option<String>,
     pub color: Option<String>,
     pub parent_id: Option<i32>,
-    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(AsExpression, FromSqlRow, Debug, Serialize, Deserialize, Clone)]

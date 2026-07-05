@@ -78,7 +78,6 @@ pub struct UpdateProject {
     pub is_featured: Option<bool>,
     pub is_visible: Option<bool>,
     pub published_at: Option<DateTime<Utc>>,
-    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Serialize)]

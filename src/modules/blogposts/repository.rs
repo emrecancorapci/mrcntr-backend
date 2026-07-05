@@ -1,12 +1,14 @@
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
-use diesel_async::RunQueryDsl;
-
 use super::{Blogpost, NewBlogpost, UpdateBlogpost};
 use crate::{PooledConn, schema::blogposts};
 
+use chrono::{DateTime, Utc};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
+use diesel_async::RunQueryDsl;
+
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Error> {
     blogposts::table
-        .filter(blogposts::id.eq(id))
+        .find(id)
+        .filter(blogposts::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .first::<Blogpost>(conn)
         .await
         .optional()
@@ -14,6 +16,7 @@ pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Err
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Blogpost>, Error> {
     blogposts::table
+        .filter(blogposts::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .order_by(blogposts::id.desc())
         .load::<Blogpost>(conn)
         .await
@@ -41,7 +44,8 @@ pub async fn update(
 }
 
 pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Error> {
-    diesel::delete(blogposts::dsl::blogposts.filter(blogposts::id.eq(id)))
+    diesel::update(blogposts::dsl::blogposts.find(id))
+        .set(blogposts::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(Blogpost::as_returning())
         .get_result(conn)
         .await

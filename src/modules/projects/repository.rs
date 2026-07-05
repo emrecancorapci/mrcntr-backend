@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use diesel::{
     BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error,
 };
@@ -19,6 +20,7 @@ pub async fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<Projec
     let project_data: Option<(Project, ProjectStatus, ProjectType, ProjectAiUsage)> =
         projects::table
             .find(project_id)
+            .filter(projects::deleted_at.eq(Option::<DateTime<Utc>>::None))
             .inner_join(schema::project_statuses::table)
             .inner_join(schema::project_types::table)
             .inner_join(schema::project_ai_usages::table)
@@ -64,6 +66,7 @@ pub async fn one(conn: &mut PooledConn, project_id: i32) -> Result<Option<Projec
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Project>, Error> {
     projects::table
+        .filter(projects::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .order_by(projects::id.desc())
         .load::<Project>(conn)
         .await
@@ -91,7 +94,8 @@ pub async fn update(
 }
 
 pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<Project>, Error> {
-    diesel::delete(projects::dsl::projects.filter(projects::id.eq(id)))
+    diesel::update(projects::dsl::projects.find(id))
+        .set(projects::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(Project::as_returning())
         .get_result(conn)
         .await

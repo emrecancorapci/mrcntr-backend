@@ -1,12 +1,14 @@
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
-use diesel_async::RunQueryDsl;
-
 use super::{NewProjectAiUsage, ProjectAiUsage, UpdateProjectAiUsage};
 use crate::{PooledConn, schema::project_ai_usages};
 
+use chrono::{DateTime, Utc};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error};
+use diesel_async::RunQueryDsl;
+
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage>, Error> {
     project_ai_usages::table
-        .filter(project_ai_usages::id.eq(id))
+        .find(id)
+        .filter(project_ai_usages::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .first::<ProjectAiUsage>(conn)
         .await
         .optional()
@@ -44,7 +46,8 @@ pub async fn update(
 }
 
 pub async fn delete(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage>, Error> {
-    diesel::delete(project_ai_usages::dsl::project_ai_usages.filter(project_ai_usages::id.eq(id)))
+    diesel::update(project_ai_usages::dsl::project_ai_usages.find(id))
+        .set(project_ai_usages::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(ProjectAiUsage::as_returning())
         .get_result(conn)
         .await

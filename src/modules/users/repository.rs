@@ -49,7 +49,7 @@ pub async fn update(
 
 pub async fn delete(conn: &mut PooledConn, uuid: Uuid) -> Result<Option<User>, Error> {
     diesel::update(users::dsl::users.find(uuid))
-        .set(users::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .set(users::deleted_at.eq(Option::<DateTime<Utc>>::Some(Utc::now())))
         .returning(User::as_returning())
         .get_result(conn)
         .await

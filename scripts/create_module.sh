@@ -192,7 +192,7 @@ use crate::{PooledConn, schema::$MODULE_NAME};
 
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<$MODEL_NAME>, Error> {
     $MODULE_NAME::table
-        .filter($MODULE_NAME::id.eq(id))
+        .find(id)
         .first::<$MODEL_NAME>(conn)
         .await
 		.optional()
