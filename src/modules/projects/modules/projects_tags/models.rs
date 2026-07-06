@@ -15,17 +15,39 @@ use crate::schema;
 pub struct ProjectTag {
     pub project_id: i32,
     pub tag_id: i32,
-    // pub sort_order: Option<i16>,
+    pub is_featured: bool,
+    pub sort_order: i16,
 }
 
-// #[derive(Deserialize)]
-// pub struct InsertManyProjectTagsItem {
-//     pub tag_id: i32,
-//     pub sort: Option<i16>,
-// }
+#[derive(Insertable, Serialize, Deserialize, Debug)]
+#[diesel(table_name = schema::projects_tags)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewProjectTag {
+    pub project_id: i32,
+    pub tag_id: i32,
+    pub is_featured: Option<bool>,
+    pub sort_order: i16,
+}
 
 #[derive(Deserialize)]
 pub struct InsertManyProjectTagsBody {
     pub project_id: i32,
-    pub tags: Vec<i32>, // Vec<InsertManyProjectTagsItem>
+    pub tags: Vec<TagInsertItem>,
+}
+
+#[derive(Deserialize)]
+pub struct TagInsertItem {
+    pub tag_id: i32,
+    pub is_featured: Option<bool>,
+}
+
+impl NewProjectTag {
+    pub fn from_item(item: TagInsertItem, project_id: i32, index: i16) -> Self {
+        Self {
+            project_id,
+            tag_id: item.tag_id,
+            is_featured: item.is_featured,
+            sort_order: index,
+        }
+    }
 }

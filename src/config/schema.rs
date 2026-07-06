@@ -182,6 +182,8 @@ diesel::table! {
     projects_tags (project_id, tag_id) {
         project_id -> Int4,
         tag_id -> Int4,
+        sort_order -> Int2,
+        is_featured -> Bool,
     }
 }
 
