@@ -19,8 +19,8 @@ use std::pin::Pin;
 use uuid::Uuid;
 
 #[derive(Clone)]
-struct AuthContent {
-    user: users::UserResponse,
+pub struct AuthContext {
+    pub user: users::UserResponse,
 }
 
 pub async fn auth_middleware(
@@ -99,7 +99,7 @@ pub async fn auth_middleware(
             ErrorInternalServerError("Internal Server Error")
         })?;
 
-        let auth_content = AuthContent { user };
+        let auth_content = AuthContext { user };
         req.extensions_mut().insert(auth_content);
     } else {
         return next.call(req).await;
@@ -126,7 +126,7 @@ where
         Box::pin(async move {
             let auth_content = req
                 .extensions()
-                .get::<AuthContent>()
+                .get::<AuthContext>()
                 .cloned()
                 .ok_or_else(|| ErrorUnauthorized("Unauthorized: No session found"))?;
 
