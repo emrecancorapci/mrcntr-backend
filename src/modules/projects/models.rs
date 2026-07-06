@@ -2,7 +2,7 @@ use super::modules::{
     project_ai_usages::ProjectAiUsage, project_blocks::ProjectBlock, project_links::ProjectLink,
     project_statuses::ProjectStatus, project_types::ProjectType,
 };
-use crate::config::schema;
+use crate::{config::schema, modules::tags::Tag};
 
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
@@ -91,25 +91,27 @@ pub struct ProjectResponse {
     pub is_visible: bool,
     pub is_featured: bool,
 
-    // O-M Ids
+    // M-O Ids
     pub project_status_id: Option<i32>,
     pub project_type_id: Option<i32>,
     pub project_ai_usage_id: Option<i32>,
 
-    // O-M Objects
+    // M-O Objects
     pub project_type: Option<ProjectType>,
     pub project_ai_usage: Option<ProjectAiUsage>,
     pub project_status: Option<ProjectStatus>,
 
-    // M-M Objects
+    // O-M Objects
     pub project_blocks: Vec<ProjectBlock>,
     pub project_links: Vec<ProjectLink>,
+
+    // M-M Objects
+    pub tags: Vec<Tag>,
 
     // Dates
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub published_at: Option<DateTime<Utc>>,
-    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Validate, Deserialize, Clone)]
@@ -135,6 +137,7 @@ pub struct NewProjectRequest {
     pub project_blocks: Vec<NewProjectBlockRequest>,
     #[validate(nested)]
     pub project_links: Vec<NewProjectLinkRequest>,
+    pub tags: Vec<i32>,
 }
 
 #[derive(Validate, Deserialize, Clone)]
@@ -188,15 +191,50 @@ impl From<Project> for ProjectResponse {
             project_status_id: value.project_status_id,
             project_type_id: value.project_type_id,
             project_ai_usage_id: value.project_ai_usage_id,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+            published_at: value.published_at,
             project_type: None,
             project_ai_usage: None,
             project_status: None,
             project_blocks: Vec::new(),
             project_links: Vec::new(),
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-            published_at: value.published_at,
-            deleted_at: value.deleted_at,
+            tags: Vec::new(),
+        }
+    }
+}
+
+impl ProjectResponse {
+    pub fn from_complete(
+        project: Project,
+        project_status: Option<ProjectStatus>,
+        project_type: Option<ProjectType>,
+        project_ai_usage: Option<ProjectAiUsage>,
+        project_blocks: Vec<ProjectBlock>,
+        project_links: Vec<ProjectLink>,
+        tags: Vec<Tag>,
+    ) -> Self {
+        Self {
+            id: project.id,
+            title: project.title,
+            project_description: project.project_description,
+            content: project.content,
+            year_created_at: project.year_created_at,
+            latest_version: project.latest_version,
+            is_visible: project.is_visible,
+            is_featured: project.is_featured,
+            project_status_id: project.project_status_id,
+            project_type_id: project.project_type_id,
+            project_ai_usage_id: project.project_ai_usage_id,
+            created_at: project.created_at,
+            updated_at: project.updated_at,
+            published_at: project.published_at,
+            project_type,
+            project_ai_usage,
+            project_status,
+            project_blocks,
+            project_links,
+            tags,
         }
     }
 }
