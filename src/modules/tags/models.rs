@@ -105,3 +105,34 @@ impl FromSql<schema::sql_types::TagTypes, diesel::pg::Pg> for TagTypeEnum {
         }
     }
 }
+
+#[derive(Serialize)]
+pub struct TagResponse {
+    pub id: i32,
+    pub slug: String,
+    pub title: String,
+    pub tag_type: Option<TagTypeEnum>,
+    pub proficiency: Option<i16>,
+    pub icon: Option<String>,
+    pub color: Option<String>,
+    pub parent_id: Option<i32>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl From<Tag> for TagResponse {
+    fn from(value: Tag) -> Self {
+        TagResponse {
+            id: value.id,
+            slug: value.slug,
+            title: value.title,
+            tag_type: value.tag_type,
+            proficiency: value.proficiency,
+            icon: value.icon,
+            color: value.color,
+            parent_id: value.parent_id,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+        }
+    }
+}

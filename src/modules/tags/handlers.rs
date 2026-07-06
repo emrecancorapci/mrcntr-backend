@@ -2,7 +2,11 @@ use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use validator::Validate;
 
 use super::{UpdateTag, repository};
-use crate::{DbPool, config::error_handler::AppError, modules::tags::NewTag};
+use crate::{
+    DbPool,
+    config::error_handler::AppError,
+    modules::tags::{NewTag, TagResponse},
+};
 
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
@@ -11,7 +15,12 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
+    let data = repository::many(&mut conn)
+        .await
+        .map_err(AppError::from)?
+        .into_iter()
+        .map(|t| t.into())
+        .collect::<Vec<TagResponse>>();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -28,10 +37,11 @@ pub async fn one(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::one(&mut conn, &id)
+    let data: TagResponse = repository::one(&mut conn, &id)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::not_found("Tag not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("Tag not found".to_string()))?
+        .into();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -50,9 +60,10 @@ pub async fn insert(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::insert(&mut conn, tag)
+    let data: TagResponse = repository::insert(&mut conn, tag)
         .await
-        .map_err(AppError::from)?;
+        .map_err(AppError::from)?
+        .into();
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -73,10 +84,11 @@ pub async fn update(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::update(&mut conn, &id, tag)
+    let data: TagResponse = repository::update(&mut conn, &id, tag)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::not_found("Tag not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("Tag not found".to_string()))?
+        .into();
 
     Ok(HttpResponse::Ok().json(data))
 }
@@ -93,10 +105,11 @@ pub async fn delete(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::delete(&mut conn, &id)
+    let data: TagResponse = repository::delete(&mut conn, &id)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::not_found("Tag not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("Tag not found".to_string()))?
+        .into();
 
     Ok(HttpResponse::Ok().json(data))
 }
