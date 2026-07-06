@@ -69,9 +69,7 @@ pub async fn insert(
 
     let data = conn
         .transaction(async |t| {
-            let exp = repository::insert(t, experience).await?;
-
-            let mut exp: ExperienceResponse = exp.into();
+            let mut exp: ExperienceResponse = repository::insert(t, experience).await?.into();
 
             if body.tags.is_none() {
                 return Ok(exp);
@@ -178,10 +176,11 @@ pub async fn delete(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::delete(&mut conn, &id)
+    let data: ExperienceResponse = repository::delete(&mut conn, &id)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::not_found("Category not found".to_string()))?;
+        .ok_or_else(|| AppError::not_found("Category not found".to_string()))?
+        .into();
 
     Ok(HttpResponse::Ok().json(data))
 }

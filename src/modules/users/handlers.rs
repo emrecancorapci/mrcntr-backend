@@ -59,11 +59,10 @@ pub async fn insert(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let user = repository::insert(&mut conn, new_user)
+    let data: UserResponse = repository::insert(&mut conn, new_user)
         .await
-        .map_err(AppError::from)?;
-
-    let data: UserResponse = user.into();
+        .map_err(AppError::from)?
+        .into();
 
     Ok(HttpResponse::Created().json(data))
 }
@@ -121,12 +120,11 @@ pub async fn delete(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let user = repository::delete(&mut conn, uuid)
+    let data: UserResponse = repository::delete(&mut conn, uuid)
         .await
         .map_err(AppError::from)?
-        .ok_or_else(|| AppError::not_found("User not found".to_string()))?;
-
-    let data: UserResponse = user.into();
+        .ok_or_else(|| AppError::not_found("User not found".to_string()))?
+        .into();
 
     Ok(HttpResponse::Ok().json(data))
 }
