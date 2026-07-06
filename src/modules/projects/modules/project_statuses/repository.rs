@@ -16,6 +16,7 @@ pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectStatus>
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<ProjectStatus>, Error> {
     project_statuses::table
+        .filter(project_statuses::deleted_at.eq(Option::<DateTime<Utc>>::None))
         .order_by(project_statuses::id.desc())
         .load::<ProjectStatus>(conn)
         .await
