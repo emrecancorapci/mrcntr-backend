@@ -7,6 +7,11 @@
 - [just](https://just.systems/man/en/) (optional)
 - [watchexec](https://watchexec.github.io/) (optional)
 
+### For Linux
+
+- [wild](https://github.com/wild-linker/wild) (linker for linux)
+- [sccache](https://github.com/mozilla/sccache) (compiler caching tool)
+
 ### For macOS
 
 Mac users should update their bash via `brew install bash` command to use `just new-mod`.
