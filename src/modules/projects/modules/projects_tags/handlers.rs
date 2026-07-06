@@ -1,7 +1,7 @@
-use actix_web::{HttpResponse, Responder, delete, post, put, web};
+use super::{InsertManyProjectTagsBody, NewProjectTag, ProjectTag, repository};
+use crate::{AppError, DbPool};
 
-use super::{InsertManyProjectTagsBody, ProjectTag, repository};
-use crate::{DbPool, config::error_handler::AppError};
+use actix_web::{HttpResponse, Responder, delete, post, put, web};
 
 #[post("")]
 pub async fn insert_one(
@@ -30,12 +30,9 @@ pub async fn insert_many(
     let exps_tags = body
         .tags
         .into_iter()
-        .map(|tag_id| ProjectTag {
-            tag_id,
-            project_id: body.project_id,
-            // sort_order: tag.sort,
-        })
-        .collect::<Vec<ProjectTag>>();
+        .enumerate()
+        .map(|(i, item)| NewProjectTag::from_item(item, body.project_id, i as i16))
+        .collect::<Vec<NewProjectTag>>();
 
     let mut conn = pool
         .get()
