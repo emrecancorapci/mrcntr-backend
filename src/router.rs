@@ -1,127 +1,194 @@
 use crate::{
-    modules::{experiences::*, projects::modules::*, *},
-    resource as r, scope as s,
+    middlewares::auth::{auth_middleware, strict_to},
+    modules::{auth::ROLE_ADMIN, experiences::*, projects::modules::*, *},
 };
 
 pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
-    cfg.service(s! {
-        scope: "/api",
-        modules: [ s! {
-            scope: "/v1",
-            modules: [
-                r! {
-                    scope:  "/auth",
-                    public: [auth::login, auth::register]
-                },
-                r! {
-                    scope:  "/experiences",
-                    public: [experiences::many, experiences::one],
-                    admin:  [experiences::insert, experiences::update, experiences::delete]
-                },
-                r! {
-                    scope:  "/tags",
-                    public: [tags::many, tags::one],
-                    admin:  [tags::insert, tags::update, tags::delete]
-                },
-                r! {
-                    scope:  "/categories",
-                    public: [categories::many, categories::one],
-                    admin:  [categories::insert, categories::update, categories::delete]
-                },
-                r! {
-                    scope:  "/projects",
-                    public: [projects::many, projects::one],
-                    admin:  [projects::insert, projects::update, projects::delete]
-                },
-                r! {
-                    scope:  "/blogposts",
-                    public: [blogposts::many, blogposts::one],
-                    admin:  [blogposts::insert, blogposts::update, blogposts::delete]
-                },
-                r! {
-                    scope:  "/comments",
-                    public: [comments::many, comments::one],
-                    admin:  [comments::insert, comments::update, comments::delete]
-                },
-                r! {
-                    scope:  "/users",
-                    admin:  [
-                        users::many,
-                        users::one,
-                        users::insert,
-                        users::update,
-                        users::delete,
-                    ]
-                },
-                r! {
-                    scope:  "/project-blocks",
-                    admin:  [
-                        project_blocks::many,
-                        project_blocks::one,
-                        project_blocks::insert,
-                        project_blocks::update,
-                        project_blocks::delete,
-                    ]
-                },
-                r! {
-                    scope:  "/project-links",
-                    admin:  [
-                        project_links::many,
-                        project_links::one,
-                        project_links::insert,
-                        project_links::update,
-                        project_links::delete,
-                    ]
-                },
-                r! {
-                    scope:  "/project-statuses",
-                    admin:  [
-                        project_statuses::many,
-                        project_statuses::one,
-                        project_statuses::insert,
-                        project_statuses::update,
-                        project_statuses::delete,
-                    ]
-                },
-                r! {
-                    scope:  "/project-types",
-                    admin:  [
-                        project_types::many,
-                        project_types::one,
-                        project_types::insert,
-                        project_types::update,
-                        project_types::delete,
-                    ]
-                },
-                r! {
-                    scope:  "/project-ai_usages",
-                    admin:  [
-                        project_ai_usages::many,
-                        project_ai_usages::one,
-                        project_ai_usages::insert,
-                        project_ai_usages::update,
-                        project_ai_usages::delete,
-                    ]
-                },
-                r! {
-                    scope:  "/experiences-tags",
-                    admin:  [
-                        experiences_tags::insert_one,
-                        experiences_tags::insert_many,
-                        experiences_tags::replace_many_by_experience_id,
-                        experiences_tags::delete
-                    ]
-                },
-                r! {
-                    scope:  "/projects-tags",
-                    admin:  [
-                        projects_tags::insert_one,
-                        projects_tags::insert_many,
-                        projects_tags::replace_many_by_project_id,
-                        projects_tags::delete
-                    ]
-                },
-            ]
-        }]
-    });
+    cfg.service(
+        actix_web::web::scope("/auth")
+            .service(auth::login)
+            .service(auth::register),
+    )
+    .service(
+        actix_web::web::scope("/experiences")
+            .service(experiences::many)
+            .service(experiences::one)
+            .service(
+                actix_web::web::scope("")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(experiences::insert)
+                    .service(experiences::update)
+                    .service(experiences::delete),
+            ),
+    )
+    .service(
+        actix_web::web::scope("/tags")
+            .service(tags::many)
+            .service(tags::one)
+            .service(
+                actix_web::web::scope("")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(tags::insert)
+                    .service(tags::update)
+                    .service(tags::delete),
+            ),
+    )
+    .service(
+        actix_web::web::scope("/categories")
+            .service(categories::many)
+            .service(categories::one)
+            .service(
+                actix_web::web::scope("")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(categories::insert)
+                    .service(categories::update)
+                    .service(categories::delete),
+            ),
+    )
+    .service(
+        actix_web::web::scope("/projects")
+            .service(projects::many)
+            .service(projects::one)
+            .service(
+                actix_web::web::scope("/{project_id}/blocks")
+                    .service(projects::submodules::blocks::many_by_project_id)
+                    .service(projects::submodules::blocks::delete_many_by_project_id)
+                    .service(
+                        actix_web::web::scope("")
+                            .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                            .wrap(actix_web::middleware::from_fn(auth_middleware)),
+                    ),
+            )
+            .service(
+                actix_web::web::scope("")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(projects::insert)
+                    .service(projects::update)
+                    .service(projects::delete),
+            ),
+    )
+    .service(
+        actix_web::web::scope("/blogposts")
+            .service(blogposts::many)
+            .service(blogposts::one)
+            .service(
+                actix_web::web::scope("")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(blogposts::insert)
+                    .service(blogposts::update)
+                    .service(blogposts::delete),
+            ),
+    )
+    .service(
+        actix_web::web::scope("/comments")
+            .service(comments::many)
+            .service(comments::one)
+            .service(
+                actix_web::web::scope("")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(comments::insert)
+                    .service(comments::update)
+                    .service(comments::delete),
+            ),
+    )
+    .service(
+        actix_web::web::scope("/users").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(users::many)
+                .service(users::one)
+                .service(users::insert)
+                .service(users::update)
+                .service(users::delete),
+        ),
+    )
+    .service(
+        actix_web::web::scope("/{project_id}/blocks").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(project_blocks::many)
+                .service(project_blocks::one)
+                .service(project_blocks::insert)
+                .service(project_blocks::update)
+                .service(project_blocks::delete),
+        ),
+    )
+    .service(
+        actix_web::web::scope("/project-links").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(project_links::many)
+                .service(project_links::one)
+                .service(project_links::insert)
+                .service(project_links::update)
+                .service(project_links::delete),
+        ),
+    )
+    .service(
+        actix_web::web::scope("/project-statuses").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(project_statuses::many)
+                .service(project_statuses::one)
+                .service(project_statuses::insert)
+                .service(project_statuses::update)
+                .service(project_statuses::delete),
+        ),
+    )
+    .service(
+        actix_web::web::scope("/project-types").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(project_types::many)
+                .service(project_types::one)
+                .service(project_types::insert)
+                .service(project_types::update)
+                .service(project_types::delete),
+        ),
+    )
+    .service(
+        actix_web::web::scope("/project-ai_usages").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(project_ai_usages::many)
+                .service(project_ai_usages::one)
+                .service(project_ai_usages::insert)
+                .service(project_ai_usages::update)
+                .service(project_ai_usages::delete),
+        ),
+    )
+    .service(
+        actix_web::web::scope("/experiences-tags").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(experiences_tags::insert_one)
+                .service(experiences_tags::insert_many)
+                .service(experiences_tags::replace_many_by_experience_id)
+                .service(experiences_tags::delete),
+        ),
+    )
+    .service(
+        actix_web::web::scope("/projects-tags").service(
+            actix_web::web::scope("")
+                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                .wrap(actix_web::middleware::from_fn(auth_middleware))
+                .service(projects_tags::insert_one)
+                .service(projects_tags::insert_many)
+                .service(projects_tags::replace_many_by_project_id)
+                .service(projects_tags::delete),
+        ),
+    );
 }

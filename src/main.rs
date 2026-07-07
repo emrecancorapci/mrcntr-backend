@@ -22,7 +22,10 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .app_data(shared_db_pool.clone())
             .app_data(shared_redis_pool.clone())
-            .configure(mrcntr::router::routes)
+            .service(
+                actix_web::web::scope("/api")
+                    .service(actix_web::web::scope("/v1").configure(mrcntr::router::routes)),
+            )
     };
 
     let ip = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
