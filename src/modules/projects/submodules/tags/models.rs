@@ -30,9 +30,10 @@ pub struct NewProjectTag {
 }
 
 #[derive(Deserialize)]
-pub struct InsertManyProjectTagsBody {
-    pub project_id: i32,
-    pub tags: Vec<TagInsertItem>,
+pub struct NewProjectTagRequest {
+    pub tag_id: i32,
+    pub is_featured: Option<bool>,
+    pub sort_order: i16,
 }
 
 #[derive(Deserialize)]
@@ -48,6 +49,15 @@ impl NewProjectTag {
             tag_id: item.tag_id,
             is_featured: item.is_featured,
             sort_order: index,
+        }
+    }
+
+    pub fn from_request(req: NewProjectTagRequest, project_id: i32) -> Self {
+        Self {
+            project_id,
+            tag_id: req.tag_id,
+            is_featured: req.is_featured,
+            sort_order: req.sort_order,
         }
     }
 }

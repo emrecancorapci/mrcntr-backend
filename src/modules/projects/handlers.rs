@@ -1,9 +1,8 @@
-use super::{
-    NewProject, NewProjectRequest, ProjectResponse, UpdateProject, modules::projects_tags,
-    repository,
-};
+use super::{NewProject, NewProjectRequest, ProjectResponse, UpdateProject, repository, submodules::tags};
 use crate::{
-    DbPool, config::error_handler::AppError, modules::{project_blocks, project_links, tags::Tag},
+    DbPool,
+    config::error_handler::AppError,
+    modules::{project_blocks, project_links, tags::Tag},
 };
 
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
@@ -42,7 +41,7 @@ pub async fn one(
     let blocks = project_blocks::repository::many_by_project(&mut conn, &p).await?;
     let links = project_links::repository::many_by_project(&mut conn, &p).await?;
 
-    let project_tags = projects_tags::repository::tags_by_project(&mut conn, &p).await?;
+    let project_tags = tags::repository::tags_by_project(&mut conn, &p).await?;
     let tags = project_tags
         .into_iter()
         .map(|(_, t)| t)
@@ -102,7 +101,7 @@ pub async fn insert(
                 .await?
                 .ok_or_else(|| AppError::not_found("Project not found".to_string()))?;
 
-            let project_tags = projects_tags::repository::tags_by_project(t, &p).await?;
+            let project_tags = tags::repository::tags_by_project(t, &p).await?;
             let tags = project_tags
                 .into_iter()
                 .map(|(_, t)| t)
@@ -170,7 +169,7 @@ pub async fn delete(
             project_links::repository::delete_by_project_id(t, id)
                 .await
                 .map_err(AppError::from)?;
-            projects_tags::repository::delete_by_project_id(t, id)
+            tags::repository::delete_by_project_id(t, id)
                 .await
                 .map_err(AppError::from)?;
 

@@ -1,37 +1,43 @@
-use super::{InsertManyProjectTagsBody, NewProjectTag, ProjectTag, repository};
+use super::{NewProjectTag, ProjectTag, TagInsertItem, repository};
 use crate::{AppError, DbPool};
 
 use actix_web::{HttpResponse, Responder, delete, post, put, web};
 
+// #[post("")]
+// pub async fn insert_one(
+//     pool: web::Data<DbPool>,
+//     path: web::Path<i32>,
+//     json: web::Json<NewProjectTagRequest>,
+// ) -> Result<impl Responder, AppError> {
+//     let project_tag = json.into_inner();
+//     let project_id = path.into_inner();
+
+//     let mut conn = pool
+//         .get()
+//         .await
+//         .map_err(|err| AppError::internal(err.to_string()))?;
+
+//     let new_project_tag = NewProjectTag::from_request(project_tag, project_id);
+
+//     let data = repository::insert_one(&mut conn, new_project_tag)
+//         .await
+//         .map_err(AppError::from)?;
+
+//     Ok(HttpResponse::Created().json(data))
+// }
+
 #[post("")]
-pub async fn insert_one(
+pub async fn insert(
     pool: web::Data<DbPool>,
-    json: web::Json<ProjectTag>,
+    path: web::Path<i32>,
+    json: web::Json<Vec<TagInsertItem>>,
 ) -> Result<impl Responder, AppError> {
-    let project_tag = json.into_inner();
-    let mut conn = pool
-        .get()
-        .await
-        .map_err(|err| AppError::internal(err.to_string()))?;
-
-    let data = repository::insert_one(&mut conn, project_tag)
-        .await
-        .map_err(AppError::from)?;
-
-    Ok(HttpResponse::Created().json(data))
-}
-
-#[post("/bulk")]
-pub async fn insert_many(
-    pool: web::Data<DbPool>,
-    json: web::Json<InsertManyProjectTagsBody>,
-) -> Result<impl Responder, AppError> {
-    let body = json.into_inner();
-    let exps_tags = body
-        .tags
+    let project_id = path.into_inner();
+    let tags = json.into_inner();
+    let exps_tags = tags
         .into_iter()
         .enumerate()
-        .map(|(i, item)| NewProjectTag::from_item(item, body.project_id, i as i16))
+        .map(|(i, item)| NewProjectTag::from_item(item, project_id, i as i16))
         .collect::<Vec<NewProjectTag>>();
 
     let mut conn = pool
@@ -46,7 +52,7 @@ pub async fn insert_many(
     Ok(HttpResponse::Created().json(data))
 }
 
-#[put("/project/{project_id}")]
+#[put("")]
 pub async fn replace_many_by_project_id(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
@@ -67,7 +73,7 @@ pub async fn replace_many_by_project_id(
     Ok(HttpResponse::Created().json(data))
 }
 
-#[delete("/project/{project_id}/tag/{tag_id}")]
+#[delete("/{tag_id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,
     path: web::Path<(i32, i32)>,

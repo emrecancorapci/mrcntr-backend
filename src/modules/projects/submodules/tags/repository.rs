@@ -66,7 +66,7 @@ pub async fn tags_by_projects(
 
 pub async fn insert_one(
     conn: &mut PooledConn,
-    project_tag: ProjectTag,
+    project_tag: NewProjectTag,
 ) -> Result<ProjectTag, Error> {
     diesel::insert_into(projects_tags::table)
         .values(&project_tag)

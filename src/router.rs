@@ -75,6 +75,14 @@ pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
                     .service(projects::submodules::links::many_by_project_id)
                     .service(projects::submodules::links::insert_by_project_id)
                     .service(projects::submodules::links::delete_many_by_project_id),
+            )
+            .service(
+                actix_web::web::scope("/{project_id}/tags")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(projects::submodules::tags::insert)
+                    .service(projects::submodules::tags::replace_many_by_project_id)
+                    .service(projects::submodules::tags::delete),
             ),
     )
     .service(
@@ -184,17 +192,6 @@ pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
                 .service(experiences_tags::insert_many)
                 .service(experiences_tags::replace_many_by_experience_id)
                 .service(experiences_tags::delete),
-        ),
-    )
-    .service(
-        actix_web::web::scope("/projects-tags").service(
-            actix_web::web::scope("")
-                .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
-                .wrap(actix_web::middleware::from_fn(auth_middleware))
-                .service(projects_tags::insert_one)
-                .service(projects_tags::insert_many)
-                .service(projects_tags::replace_many_by_project_id)
-                .service(projects_tags::delete),
         ),
     );
 }
