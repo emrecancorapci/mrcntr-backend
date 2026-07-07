@@ -53,22 +53,28 @@ pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
             .service(projects::many)
             .service(projects::one)
             .service(
-                actix_web::web::scope("/{project_id}/blocks")
-                    .service(projects::submodules::blocks::many_by_project_id)
-                    .service(projects::submodules::blocks::delete_many_by_project_id)
-                    .service(
-                        actix_web::web::scope("")
-                            .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
-                            .wrap(actix_web::middleware::from_fn(auth_middleware)),
-                    ),
-            )
-            .service(
                 actix_web::web::scope("")
                     .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
                     .wrap(actix_web::middleware::from_fn(auth_middleware))
                     .service(projects::insert)
                     .service(projects::update)
                     .service(projects::delete),
+            )
+            .service(
+                actix_web::web::scope("/{project_id}/blocks")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(projects::submodules::blocks::many_by_project_id)
+                    .service(projects::submodules::blocks::insert_by_project_id)
+                    .service(projects::submodules::blocks::delete_many_by_project_id),
+            )
+            .service(
+                actix_web::web::scope("/{project_id}/links")
+                    .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
+                    .wrap(actix_web::middleware::from_fn(auth_middleware))
+                    .service(projects::submodules::links::many_by_project_id)
+                    .service(projects::submodules::links::insert_by_project_id)
+                    .service(projects::submodules::links::delete_many_by_project_id),
             ),
     )
     .service(

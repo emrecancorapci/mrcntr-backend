@@ -1,12 +1,9 @@
 use super::{
-    NewProject, NewProjectRequest, ProjectResponse, UpdateProject,
-    modules::{project_links, projects_tags},
+    NewProject, NewProjectRequest, ProjectResponse, UpdateProject, modules::projects_tags,
     repository,
 };
 use crate::{
-    DbPool,
-    config::error_handler::AppError,
-    modules::{project_blocks, tags::Tag},
+    DbPool, config::error_handler::AppError, modules::{project_blocks, project_links, tags::Tag},
 };
 
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};

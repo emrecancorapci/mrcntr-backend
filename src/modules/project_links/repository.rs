@@ -3,7 +3,8 @@ use crate::{PooledConn, modules::projects::Project, schema::project_links};
 
 use chrono::{DateTime, Utc};
 use diesel::{
-    BelongingToDsl, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper, result::Error,
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl,
+    SelectableHelper, result::Error,
 };
 use diesel_async::RunQueryDsl;
 
@@ -78,4 +79,19 @@ pub async fn delete_by_project_id(
     .returning(ProjectLink::as_returning())
     .get_results(conn)
     .await
+}
+
+pub async fn many_by_project_id(
+    conn: &mut PooledConn,
+    project_id: &i32,
+) -> Result<Vec<ProjectLink>, Error> {
+    project_links::table
+        .filter(
+            project_links::deleted_at
+                .eq(Option::<DateTime<Utc>>::None)
+                .and(project_links::project_id.eq(project_id)),
+        )
+        .order_by(project_links::id.desc())
+        .load::<ProjectLink>(conn)
+        .await
 }

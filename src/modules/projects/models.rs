@@ -1,9 +1,8 @@
 use super::modules::{
-    project_ai_usages::ProjectAiUsage, project_links::ProjectLink,
-    project_statuses::ProjectStatus, project_types::ProjectType,
+    project_ai_usages::ProjectAiUsage, project_statuses::ProjectStatus, project_types::ProjectType,
 };
 use crate::{
-    config::schema, modules::{project_blocks::{NewProjectBlockRequest, ProjectBlock}, tags::Tag},
+    config::schema, modules::{project_blocks::{NewProjectBlockRequest, ProjectBlock}, project_links::ProjectLink, tags::Tag},
 };
 
 use chrono::{DateTime, Utc};

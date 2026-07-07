@@ -55,3 +55,23 @@ pub struct UpdateProjectLink {
     pub link: Option<String>,
     pub updated_at: DateTime<Utc>,
 }
+
+#[derive(Deserialize, Validate, Clone)]
+pub struct NewProjectLinkRequest {
+    pub sort_order: i16,
+    #[validate(length(min = 3))]
+    pub title: String,
+    #[validate(url)]
+    pub link: String,
+}
+
+impl NewProjectLink {
+    pub fn from_request(value: NewProjectLinkRequest, project_id: i32) -> Self {
+        Self {
+            sort_order: value.sort_order,
+            title: value.title,
+            link: value.link,
+            project_id,
+        }
+    }
+}
