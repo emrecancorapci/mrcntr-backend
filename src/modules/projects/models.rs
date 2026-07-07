@@ -1,8 +1,8 @@
 use super::modules::{
-    project_ai_usages::ProjectAiUsage, project_blocks::ProjectBlock, project_links::ProjectLink,
+    project_ai_usages::ProjectAiUsage, project_links::ProjectLink,
     project_statuses::ProjectStatus, project_types::ProjectType,
 };
-use crate::{config::schema, modules::tags::Tag};
+use crate::{config::schema, modules::{project_blocks::ProjectBlock, tags::Tag}};
 
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;

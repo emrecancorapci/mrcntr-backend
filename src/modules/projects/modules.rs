@@ -7,15 +7,6 @@ pub mod project_ai_usages {
     pub use models::*;
 }
 
-pub mod project_blocks {
-    mod handlers;
-    mod models;
-    pub mod repository;
-
-    pub use handlers::*;
-    pub use models::*;
-}
-
 pub mod project_links {
     mod handlers;
     mod models;

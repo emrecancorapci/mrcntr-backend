@@ -17,9 +17,9 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
-    path: web::Path<i32>,
+    path: web::Path<(i32, i32)>,
 ) -> Result<impl Responder, AppError> {
-    let id = path.into_inner();
+    let (_project_id, id) = path.into_inner();
 
     let mut conn = pool
         .get()
@@ -97,3 +97,4 @@ pub async fn delete(
 
     Ok(HttpResponse::Ok().json(data))
 }
+

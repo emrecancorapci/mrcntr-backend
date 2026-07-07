@@ -22,7 +22,7 @@ pub struct ProjectBlock {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Debug, Clone, Deserialize)]
+#[derive(Insertable, Deserialize)]
 #[diesel(table_name = schema::project_blocks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProjectBlock {
@@ -31,6 +31,26 @@ pub struct NewProjectBlock {
     pub content: String,
     pub project_id: i32,
     pub is_active: bool,
+}
+
+#[derive(Deserialize)]
+pub struct NewProjectBlockRequest {
+    pub sort_order: i16,
+    pub title: String,
+    pub content: String,
+    pub is_active: bool,
+}
+
+impl NewProjectBlock {
+    pub fn from_request(value: NewProjectBlockRequest, project_id: i32) -> Self {
+        Self {
+            sort_order: value.sort_order,
+            title: value.title,
+            content: value.content,
+            is_active: value.is_active,
+            project_id,
+        }
+    }
 }
 
 #[derive(AsChangeset, Deserialize)]
