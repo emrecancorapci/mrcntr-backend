@@ -110,7 +110,7 @@ pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
         ),
     )
     .service(
-        actix_web::web::scope("/{project_id}/blocks").service(
+        actix_web::web::scope("/project-blocks").service(
             actix_web::web::scope("")
                 .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
                 .wrap(actix_web::middleware::from_fn(auth_middleware))
