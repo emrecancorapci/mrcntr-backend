@@ -39,8 +39,31 @@
     - [X] Redis token storage system (limited to one token)
   - [X] Categories
   - [X] Experiences
-  - [ ] Projects
-  - [ ] Users
+  - [X] Projects
+  - [X] Users
+  - [X] Tags
+- [ ] CORS Settings
+
+#### Before Release
+
+- [ ] Restrict registering
+
+### v1.1 (Rate Limiter Update)
+
+- Custom rate limiter
+
+### v1.2 (Blogpost Update)
+
+- [ ] Removing repository pattern
+- [ ] Complete blogpost module
+
+### v1.3 (User Interaction Update)
+
+- [ ] Karma system for posts and comments
+- [ ] Filtering for spam comments and forbidden words (or regex)
+
+### v1.4 (Caching)
+
 - [ ] Redis Caching
   - [ ] projects (1 month)
     - [ ] project_* (1 month)
@@ -48,30 +71,16 @@
   - [ ] tags (1 week)
   - [ ] blogposts (1 week)
 
-#### Before Release
-
-- [ ] Restrict registering
-
-### v1.1 (Blogpost Update)
-
-- [ ] Removing repository pattern
-- [ ] Complete blogpost module
-
-### v1.2 (Interaction Update)
-
-- [ ] Karma system for posts and comments
-- [ ] Filtering for spam comments and forbidden words (or regex)
-
-### v1.3 (Email Update)
+### v1.5 (Email Update)
 
 - [ ] Local email STMP server setup
 - [ ] Email verification
 
-### v1.4 (Blog Series Update)
+### v1.6 (Blog Series Update)
 
 - [ ] Blogpost series
 
-### v1.5 (Error Handling Update)
+### v1.7 (Error Handling Update)
 
 - [ ] Comprehensive error handling
   - [ ] postgres errors
