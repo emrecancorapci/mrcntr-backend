@@ -80,9 +80,10 @@ pub fn routes(cfg: &mut actix_web::web::ServiceConfig) {
                 actix_web::web::scope("/{project_id}/tags")
                     .wrap(actix_web::middleware::from_fn(strict_to(vec![ROLE_ADMIN])))
                     .wrap(actix_web::middleware::from_fn(auth_middleware))
-                    .service(projects::submodules::tags::insert)
+                    .service(projects::submodules::tags::many_by_project_id)
+                    .service(projects::submodules::tags::insert_by_project_id)
                     .service(projects::submodules::tags::replace_many_by_project_id)
-                    .service(projects::submodules::tags::delete),
+                    .service(projects::submodules::tags::delete_by_project_and_tag_id),
             ),
     )
     .service(

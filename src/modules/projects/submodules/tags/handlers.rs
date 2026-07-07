@@ -1,7 +1,7 @@
 use super::{NewProjectTag, ProjectTag, TagInsertItem, repository};
-use crate::{AppError, DbPool};
+use crate::{AppError, DbPool, modules::tags::Tag};
 
-use actix_web::{HttpResponse, Responder, delete, post, put, web};
+use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 
 // #[post("")]
 // pub async fn insert_one(
@@ -26,8 +26,32 @@ use actix_web::{HttpResponse, Responder, delete, post, put, web};
 //     Ok(HttpResponse::Created().json(data))
 // }
 
+#[get("")]
+pub async fn many_by_project_id(
+    pool: web::Data<DbPool>,
+    path: web::Path<i32>,
+) -> Result<impl Responder, AppError> {
+    let project_id = path.into_inner();
+
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|err| AppError::internal(err.to_string()))?;
+
+    let projects_tags = repository::many_by_project_id(&mut conn, &project_id)
+        .await
+        .map_err(AppError::from)?;
+
+    let data = projects_tags
+        .into_iter()
+        .map(|(_, t)| t)
+        .collect::<Vec<Tag>>();
+
+    Ok(HttpResponse::Ok().json(data))
+}
+
 #[post("")]
-pub async fn insert(
+pub async fn insert_by_project_id(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
     json: web::Json<Vec<TagInsertItem>>,
@@ -74,7 +98,7 @@ pub async fn replace_many_by_project_id(
 }
 
 #[delete("/{tag_id}")]
-pub async fn delete(
+pub async fn delete_by_project_and_tag_id(
     pool: web::Data<DbPool>,
     path: web::Path<(i32, i32)>,
 ) -> Result<impl Responder, AppError> {

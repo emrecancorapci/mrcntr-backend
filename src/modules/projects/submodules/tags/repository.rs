@@ -2,7 +2,7 @@ use super::{NewProjectTag, ProjectTag};
 use crate::{
     PooledConn,
     modules::{projects::Project, tags::Tag},
-    schema::projects_tags,
+    schema::{projects_tags, tags},
 };
 
 use diesel::{
@@ -33,14 +33,17 @@ pub async fn tags_by_projects(
         .await
 }
 
-// pub async fn many_by_project_id(
-//     conn: &mut PooledConn,
-//     project_id: i32,
-// ) -> Result<Vec<ProjectTag>, Error> {
-//     projects_tags::table
-//         .filter(projects_tags::project_id.eq(project_id))
-//         .get_results(conn)
-// }
+pub async fn many_by_project_id(
+    conn: &mut PooledConn,
+    project_id: &i32,
+) -> Result<Vec<(ProjectTag, Tag)>, Error> {
+    projects_tags::table
+        .filter(projects_tags::project_id.eq(project_id))
+        .inner_join(tags::table)
+        .select((ProjectTag::as_select(), Tag::as_select()))
+        .load::<(ProjectTag, Tag)>(conn)
+        .await
+}
 
 // pub async fn many_by_tag_id(conn: &mut PooledConn, tag_id: i32) -> Result<Vec<ProjectTag>, Error> {
 //     projects_tags::table
