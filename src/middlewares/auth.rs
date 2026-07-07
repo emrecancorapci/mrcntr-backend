@@ -109,7 +109,7 @@ pub async fn auth_middleware(
 }
 
 pub fn strict_to<B>(
-    roles: Vec<&str>,
+    roles: &[&str],
 ) -> impl Fn(
     ServiceRequest,
     Next<B>,
