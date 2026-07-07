@@ -2,7 +2,9 @@ use super::modules::{
     project_ai_usages::ProjectAiUsage, project_links::ProjectLink,
     project_statuses::ProjectStatus, project_types::ProjectType,
 };
-use crate::{config::schema, modules::{project_blocks::ProjectBlock, tags::Tag}};
+use crate::{
+    config::schema, modules::{project_blocks::{NewProjectBlockRequest, ProjectBlock}, tags::Tag},
+};
 
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
@@ -138,16 +140,6 @@ pub struct NewProjectRequest {
     #[validate(nested)]
     pub project_links: Vec<NewProjectLinkRequest>,
     pub tags: Vec<i32>,
-}
-
-#[derive(Validate, Deserialize, Clone)]
-pub struct NewProjectBlockRequest {
-    pub sort_order: i16,
-    #[validate(length(min = 3))]
-    pub title: String,
-    #[validate(length(min = 3))]
-    pub content: String,
-    pub is_active: bool,
 }
 
 #[derive(Validate, Deserialize, Clone)]

@@ -3,6 +3,7 @@ use crate::{config::schema, modules::projects::Project};
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 #[derive(
     Queryable, Selectable, Identifiable, Associations, Debug, Clone, Serialize, Deserialize,
@@ -33,11 +34,13 @@ pub struct NewProjectBlock {
     pub is_active: bool,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate, Clone)]
 pub struct NewProjectBlockRequest {
-    pub sort_order: i16,
+    #[validate(length(min = 3))]
     pub title: String,
+    #[validate(length(min = 3))]
     pub content: String,
+    pub sort_order: i16,
     pub is_active: bool,
 }
 
