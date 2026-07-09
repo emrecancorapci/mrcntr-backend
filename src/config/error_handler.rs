@@ -1,6 +1,7 @@
 use actix_web::{HttpResponse, error::ResponseError};
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use std::{collections::HashSet, fmt};
 
@@ -12,8 +13,8 @@ pub enum AppError {
     Unauthorized(HashSet<String>),
 }
 
-#[derive(Serialize)]
-struct ErrorResponse {
+#[derive(ToSchema, Serialize)]
+pub struct ErrorResponse {
     errors: HashSet<String>,
     codes: HashSet<String>,
 }

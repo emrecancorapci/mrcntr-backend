@@ -1,6 +1,17 @@
 use actix_limitation::RateLimiter;
 use actix_web::{App, HttpServer, middleware::Logger, web};
 use mrcntr::{AppDatabase, AppLimiter};
+use utoipa::OpenApi;
+use utoipa_actix_web::AppExt;
+use utoipa_swagger_ui::SwaggerUi;
+
+#[derive(utoipa::OpenApi)]
+#[openapi(
+        tags(
+            (name = "mrcntr", description = "Backend of mrcn.tr")
+        ),
+    )]
+struct ApiDoc;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -17,15 +28,22 @@ async fn main() -> std::io::Result<()> {
 
     let app = move || {
         App::new()
-            .wrap(RateLimiter::default())
-            .app_data(shared_limiter.clone())
-            .wrap(Logger::default())
-            .app_data(shared_db_pool.clone())
-            .app_data(shared_redis_pool.clone())
+            .into_utoipa_app()
+            .openapi(ApiDoc::openapi())
+            .map(|app| {
+                app.wrap(RateLimiter::default())
+                    .app_data(shared_limiter.clone())
+                    .wrap(Logger::default())
+                    .app_data(shared_db_pool.clone())
+                    .app_data(shared_redis_pool.clone())
+            })
             .service(
-                actix_web::web::scope("/api")
-                    .service(actix_web::web::scope("/v1").configure(mrcntr::router::routes)),
+                utoipa_actix_web::scope("/api")
+                    .service(utoipa_actix_web::scope("/v1").configure(mrcntr::router::routes)),
             )
+            .openapi_service(|api| {
+                SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", api)
+            })
     };
 
     let ip = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
