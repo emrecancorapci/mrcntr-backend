@@ -10,12 +10,7 @@ actix-web = "4.14.0"
 argon2 = { version = "0.6.0-rc.8" }
 chrono = { version = "0.4.45", features = ["serde"] }
 deadpool-redis = { version = "0.23.0", features = ["rt_tokio_1"] }
-diesel = { version = "2.3.10", features = [
-    "postgres",
-    "chrono",
-    "r2d2",
-    "uuid",
-] }
+diesel = { version = "2.3.10", features = ["postgres", "chrono", "uuid"] }
 diesel-async = { version = "0.9.2", features = ["postgres", "deadpool"] }
 dotenvy = "0.15.7"
 jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
