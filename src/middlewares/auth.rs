@@ -16,6 +16,10 @@ use actix_web::{
 };
 use redis::AsyncTypedCommands;
 use std::pin::Pin;
+use utoipa::openapi::{
+    Components, OpenApi,
+    security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
+};
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -140,5 +144,25 @@ where
 
             next.call(req).await
         })
+    }
+}
+
+pub struct SecurityAddon;
+
+impl utoipa::Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut OpenApi) {
+        if openapi.components.is_none() {
+            openapi.components = Some(Components::new());
+        }
+        let components = openapi.components.as_mut().unwrap();
+        components.add_security_scheme(
+            "token_jwt",
+            SecurityScheme::Http(
+                HttpBuilder::new()
+                    .scheme(HttpAuthScheme::Bearer)
+                    .bearer_format("JWT")
+                    .build(),
+            ),
+        );
     }
 }
