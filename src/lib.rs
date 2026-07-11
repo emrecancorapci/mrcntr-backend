@@ -5,6 +5,7 @@ mod config {
     pub mod db;
     pub mod error_handler;
     pub mod limiter;
+    pub mod openapi;
     pub mod schema;
 }
 
@@ -17,6 +18,7 @@ mod modules;
 pub mod macros;
 pub mod router;
 
+pub use config::openapi::ApiDoc;
 pub use config::db::*;
 pub use config::error_handler::AppError;
 pub use config::limiter::*;

@@ -1,18 +1,9 @@
 use actix_limitation::RateLimiter;
 use actix_web::{App, HttpServer, middleware::Logger, web};
-use mrcntr::{AppDatabase, AppLimiter, middlewares::auth::SecurityAddon};
+use mrcntr::{ApiDoc, AppDatabase, AppLimiter};
 use utoipa::OpenApi;
 use utoipa_actix_web::AppExt;
 use utoipa_swagger_ui::SwaggerUi;
-
-#[derive(utoipa::OpenApi)]
-#[openapi(
-        tags(
-            (name = "mrcntr", description = "Backend of mrcn.tr")
-        ),
-        modifiers(&SecurityAddon)
-    )]
-struct ApiDoc;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -43,7 +34,7 @@ async fn main() -> std::io::Result<()> {
                     .service(utoipa_actix_web::scope("/v1").configure(mrcntr::router::routes)),
             )
             .openapi_service(|api| {
-                SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", api)
+                SwaggerUi::new("/docs/{_:.*}").url("/docs/openapi.json", api)
             })
             .into_app()
     };
