@@ -4,7 +4,7 @@ use super::{NewProjectAiUsage, ProjectAiUsage, UpdateProjectAiUsage, repository}
 use crate::{AppError, DbPool, config::error_handler::ErrorResponse};
 
 #[utoipa::path(
-    tag="project",
+    tags = ["Project AI Usage"],
     responses(
         (status = 200, description = "ProjectAIUsage found from database", body=Vec<ProjectAiUsage>),
         (status = 500, body=ErrorResponse)
@@ -24,7 +24,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag="project",
+    tags = ["Project AI Usage"],
     responses(
         (status = 200, description = "ProjectAIUsage found from database", body=Vec<ProjectAiUsage>),
         (status = 500, body=ErrorResponse)
@@ -54,7 +54,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag="project",
+    tags = ["Project AI Usage"],
     responses(
         (status = 201, description = "ProjectAIUsage created", body = ProjectAiUsage),
         (status = 500, body = ErrorResponse)
@@ -81,7 +81,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag="project",
+    tags = ["Project AI Usage"],
     responses(
         (status = 200, description = "ProjectAIUsage updated", body = ProjectAiUsage),
         (status = 500, body = ErrorResponse)
@@ -113,7 +113,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag="project",
+    tags = ["Project AI Usage"],
     responses(
         (status = 200, description = "ProjectAIUsage deleted", body = ProjectAiUsage),
         (status = 500, body = ErrorResponse)

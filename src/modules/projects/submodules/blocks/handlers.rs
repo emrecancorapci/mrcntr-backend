@@ -3,7 +3,7 @@ use actix_web::{HttpResponse, Responder, delete, get, post, web};
 use crate::{AppError, DbPool, config::error_handler::ErrorResponse, modules::project_blocks::{NewProjectBlock, NewProjectBlockRequest, ProjectBlock, repository}};
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "List of project blocks", body = [ProjectBlock]),
         (status = 500, body = ErrorResponse)
@@ -32,7 +32,7 @@ pub async fn many_by_project_id(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     request_body = NewProjectBlockRequest,
     responses(
         (status = 201, description = "Project block created", body = ProjectBlock),
@@ -70,7 +70,7 @@ pub async fn insert_by_project_id(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "Project blocks deleted", body = [ProjectBlock]),
         (status = 500, body = ErrorResponse)

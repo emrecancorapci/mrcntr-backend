@@ -23,9 +23,3 @@ pub struct InsertManyExperienceTagsItem {
     pub tag_id: i32,
     pub sort: Option<i16>,
 }
-
-#[derive(Deserialize, ToSchema)]
-pub struct InsertManyExperienceTagsBody {
-    pub experience_id: i32,
-    pub tags: Vec<InsertManyExperienceTagsItem>,
-}

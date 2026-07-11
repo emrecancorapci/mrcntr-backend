@@ -6,7 +6,7 @@ use chrono::Utc;
 use validator::Validate;
 
 #[utoipa::path(
-    tag = "categories",
+    tags = ["Category"],
     responses(
         (status = 200, description = "List of categories", body = [CategoryResponse]),
         (status = 500, body = ErrorResponse)
@@ -31,7 +31,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "categories",
+    tags = ["Category"],
     responses(
         (status = 200, description = "Category detail", body = CategoryResponse),
         (status = 404, body = ErrorResponse),
@@ -64,7 +64,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "categories",
+    tags = ["Category"],
     request_body = NewCategory,
     responses(
         (status = 201, description = "Category created", body = CategoryResponse),
@@ -96,7 +96,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "categories",
+    tags = ["Category"],
     request_body = UpdateCategoryRequest,
     responses(
         (status = 200, description = "Category updated", body = CategoryResponse),
@@ -141,7 +141,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "categories",
+    tags = ["Category"],
     responses(
         (status = 200, description = "Category deleted", body = CategoryResponse),
         (status = 404, body = ErrorResponse),

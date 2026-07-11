@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[utoipa::path(
-    tag = "blogposts",
+    tags = ["Blogpost"],
     responses(
         (status = 200, description = "List of blogposts", body = [Blogpost]),
         (status = 500, body = ErrorResponse)
@@ -28,7 +28,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "blogposts",
+    tags = ["Blogpost"],
     responses(
         (status = 200, description = "Blogpost detail", body = Blogpost),
         (status = 404, body = ErrorResponse),
@@ -60,7 +60,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "blogposts",
+    tags = ["Blogpost"],
     request_body = NewBlogpost,
     responses(
         (status = 201, description = "Blogpost created", body = Blogpost),
@@ -89,7 +89,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "blogposts",
+    tags = ["Blogpost"],
     request_body = UpdateBlogpost,
     responses(
         (status = 200, description = "Blogpost updated", body = Blogpost),
@@ -125,7 +125,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "blogposts",
+    tags = ["Blogpost"],
     responses(
         (status = 200, description = "Blogpost deleted", body = Blogpost),
         (status = 404, body = ErrorResponse),

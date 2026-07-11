@@ -10,7 +10,7 @@ use diesel_async::AsyncConnection;
 use validator::Validate;
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "List of projects", body = [ProjectResponse]),
         (status = 500, body = ErrorResponse)
@@ -30,7 +30,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "Project detail", body = ProjectResponse),
         (status = 404, body = ErrorResponse),
@@ -73,7 +73,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     request_body = NewProjectRequest,
     responses(
         (status = 201, description = "Project created", body = ProjectResponse),
@@ -148,7 +148,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     request_body = UpdateProject,
     responses(
         (status = 200, description = "Project updated", body = ProjectResponse),
@@ -189,7 +189,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "Project deleted", body = ProjectResponse),
         (status = 404, body = ErrorResponse),

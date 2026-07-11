@@ -27,7 +27,7 @@ use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 // }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "List of tags for a project", body = [Tag]),
         (status = 500, body = ErrorResponse)
@@ -62,7 +62,7 @@ pub async fn many_by_project_id(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     request_body = Vec<TagInsertItem>,
     responses(
         (status = 201, description = "Project tags created", body = [ProjectTag]),
@@ -100,7 +100,7 @@ pub async fn insert_by_project_id(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     request_body = Vec<ProjectTag>,
     responses(
         (status = 201, description = "Project tags replaced", body = [ProjectTag]),
@@ -133,7 +133,7 @@ pub async fn replace_many_by_project_id(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "Project tag deleted", body = ProjectTag),
         (status = 500, body = ErrorResponse)

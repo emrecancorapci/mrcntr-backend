@@ -7,13 +7,13 @@ use crate::{
 };
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "List of project links", body = [ProjectLink]),
         (status = 500, body = ErrorResponse)
     ),
     params(
-        ("project_id" = i32, Path, description = "Project id")
+        ("id" = i32, Path, description = "Project id")
     ),
     security(("token_jwt" = []))
 )]
@@ -36,14 +36,14 @@ pub async fn many_by_project_id(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     request_body = NewProjectLinkRequest,
     responses(
         (status = 201, description = "Project link created", body = ProjectLink),
         (status = 500, body = ErrorResponse)
     ),
     params(
-        ("project_id" = i32, Path, description = "Project id")
+        ("id" = i32, Path, description = "Project id")
     ),
     security(("token_jwt" = []))
 )]
@@ -74,13 +74,13 @@ pub async fn insert_by_project_id(
 }
 
 #[utoipa::path(
-    tag = "projects",
+    tags = ["Project"],
     responses(
         (status = 200, description = "Project links deleted", body = [ProjectLink]),
         (status = 500, body = ErrorResponse)
     ),
     params(
-        ("project_id" = i32, Path, description = "Project id")
+        ("id" = i32, Path, description = "Project id")
     ),
     security(("token_jwt" = []))
 )]

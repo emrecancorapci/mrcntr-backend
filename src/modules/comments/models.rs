@@ -24,6 +24,7 @@ pub struct Comment {
 #[diesel(table_name = schema::comments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewComment {
+    pub author_uuid: Uuid,
     pub content: String,
     pub blogpost_id: i32,
     pub parent_comment_id: Option<i32>,

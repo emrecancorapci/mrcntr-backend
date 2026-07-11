@@ -1,39 +1,15 @@
 use actix_web::{HttpResponse, Responder, delete, post, put, web};
 
-use super::{ExperienceTag, InsertManyExperienceTagsBody, repository};
-use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}};
+use super::{ExperienceTag, repository};
+use crate::{
+    DbPool,
+    config::error_handler::{AppError, ErrorResponse},
+    modules::experiences::experiences_tags::InsertManyExperienceTagsItem,
+};
 
 #[utoipa::path(
-    tag = "experiences-tags",
-    request_body = ExperienceTag,
-    responses(
-        (status = 201, description = "Experience tag created", body = ExperienceTag),
-        (status = 500, body = ErrorResponse)
-    ),
-    security(("token_jwt" = []))
-)]
-#[post("")]
-pub async fn insert_one(
-    pool: web::Data<DbPool>,
-    json: web::Json<ExperienceTag>,
-) -> Result<impl Responder, AppError> {
-    let exp_tag = json.into_inner();
-
-    let mut conn = pool
-        .get()
-        .await
-        .map_err(|err| AppError::internal(err.to_string()))?;
-
-    let data = repository::insert_one(&mut conn, exp_tag)
-        .await
-        .map_err(AppError::from)?;
-
-    Ok(HttpResponse::Created().json(data))
-}
-
-#[utoipa::path(
-    tag = "experiences-tags",
-    request_body = InsertManyExperienceTagsBody,
+    tags = ["Experience"],
+    request_body = Vec<InsertManyExperienceTagsItem>,
     responses(
         (status = 201, description = "Experience tags created", body = [ExperienceTag]),
         (status = 500, body = ErrorResponse)
@@ -43,15 +19,17 @@ pub async fn insert_one(
 #[post("/bulk")]
 pub async fn insert_many(
     pool: web::Data<DbPool>,
-    json: web::Json<InsertManyExperienceTagsBody>,
+    path: web::Path<i32>,
+    json: web::Json<Vec<InsertManyExperienceTagsItem>>,
 ) -> Result<impl Responder, AppError> {
-    let body = json.into_inner();
-    let exps_tags = body
-        .tags
+    let tags = json.into_inner();
+    let experience_id = path.into_inner();
+
+    let exps_tags = tags
         .into_iter()
         .map(|tag| ExperienceTag {
+            experience_id,
             tag_id: tag.tag_id,
-            experience_id: body.experience_id,
             sort_order: tag.sort,
         })
         .collect::<Vec<ExperienceTag>>();
@@ -69,8 +47,8 @@ pub async fn insert_many(
 }
 
 #[utoipa::path(
-    tag = "experiences-tags",
-    request_body = Vec<ExperienceTag>,
+    tags = ["Experience"],
+    request_body = Vec<InsertManyExperienceTagsItem>,
     responses(
         (status = 201, description = "Experience tags replaced", body = [ExperienceTag]),
         (status = 500, body = ErrorResponse)
@@ -80,21 +58,30 @@ pub async fn insert_many(
     ),
     security(("token_jwt" = []))
 )]
-#[put("/experience/{experience_id}")]
+#[put("")]
 pub async fn replace_many_by_experience_id(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
-    json: web::Json<Vec<ExperienceTag>>,
+    json: web::Json<Vec<InsertManyExperienceTagsItem>>,
 ) -> Result<impl Responder, AppError> {
-    let id = path.into_inner();
-    let exp_tag = json.into_inner();
+    let experience_id = path.into_inner();
+    let tags = json.into_inner();
+
+    let exps_tags = tags
+        .into_iter()
+        .map(|tag| ExperienceTag {
+            experience_id,
+            tag_id: tag.tag_id,
+            sort_order: tag.sort,
+        })
+        .collect::<Vec<ExperienceTag>>();
 
     let mut conn = pool
         .get()
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::replace_many(&mut conn, id, exp_tag)
+    let data = repository::replace_many(&mut conn, experience_id, exps_tags)
         .await
         .map_err(AppError::from)?;
 
@@ -102,7 +89,7 @@ pub async fn replace_many_by_experience_id(
 }
 
 #[utoipa::path(
-    tag = "experiences-tags",
+    tags = ["Experience"],
     responses(
         (status = 200, description = "Experience tag deleted", body = ExperienceTag),
         (status = 500, body = ErrorResponse)
@@ -113,7 +100,7 @@ pub async fn replace_many_by_experience_id(
     ),
     security(("token_jwt" = []))
 )]
-#[delete("/experience/{experience_id}/tag/{tag_id}")]
+#[delete("/{tag_id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,
     path: web::Path<(i32, i32)>,

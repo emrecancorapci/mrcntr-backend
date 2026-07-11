@@ -13,7 +13,7 @@ use actix_web::{HttpResponse, Responder, post, web};
 use validator::Validate;
 
 #[utoipa::path(
-    tag="auth",
+    tag="Authentication",
     responses(
         (status = 200, description = "Credentials are valid", body=AuthResponse),
         (status = 400, description = "Credentials are invalid", body=ErrorResponse),
@@ -88,7 +88,7 @@ pub async fn register(
 }
 
 #[utoipa::path(
-    tag="auth",
+    tag="Authentication",
     responses(
         (status = 200, description = "Credentials are valid", body=AuthResponse),
         (status = 400, description = "Credentials are invalid", body=ErrorResponse),

@@ -10,7 +10,7 @@ use super::{
 use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}, modules::tags};
 
 #[utoipa::path(
-    tag = "experiences",
+    tags = ["Experience"],
     responses(
         (status = 200, description = "List of experiences", body = [ExperienceResponse]),
         (status = 500, body = ErrorResponse)
@@ -37,7 +37,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "experiences",
+    tags = ["Experience"],
     responses(
         (status = 200, description = "Experience detail", body = ExperienceResponse),
         (status = 404, body = ErrorResponse),
@@ -73,7 +73,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "experiences",
+    tags = ["Experience"],
     request_body = ExperienceInsertBody,
     responses(
         (status = 201, description = "Experience created", body = ExperienceResponse),
@@ -137,7 +137,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "experiences",
+    tags = ["Experience"],
     request_body = ExperienceUpdateBody,
     responses(
         (status = 200, description = "Experience updated", body = ExperienceResponse),
@@ -209,7 +209,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "experiences",
+    tags = ["Experience"],
     responses(
         (status = 200, description = "Experience deleted", body = ExperienceResponse),
         (status = 404, body = ErrorResponse),

@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[utoipa::path(
-    tag = "tags",
+    tags = ["Tag"],
     responses(
         (status = 200, description = "List of tags", body = [TagResponse]),
         (status = 500, body = ErrorResponse)
@@ -34,7 +34,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "tags",
+    tags = ["Tag"],
     responses(
         (status = 200, description = "Tag detail", body = TagResponse),
         (status = 404, body = ErrorResponse),
@@ -67,7 +67,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "tags",
+    tags = ["Tag"],
     request_body = NewTag,
     responses(
         (status = 201, description = "Tag created", body = TagResponse),
@@ -99,7 +99,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "tags",
+    tags = ["Tag"],
     request_body = UpdateTag,
     responses(
         (status = 200, description = "Tag updated", body = TagResponse),
@@ -138,7 +138,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "tags",
+    tags = ["Tag"],
     responses(
         (status = 200, description = "Tag deleted", body = TagResponse),
         (status = 404, body = ErrorResponse),

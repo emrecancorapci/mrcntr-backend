@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[utoipa::path(
-    tag = "project_blocks",
+    tags = ["Project Block"],
     responses(
         (status = 200, description = "ProjectBlocks", body = Vec<ProjectBlock>),
         (status = 404, body = ErrorResponse),
@@ -30,7 +30,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "project_blocks",
+    tags = ["Project Block"],
     responses(
         (status = 200, description = "ProjectBlock", body = ProjectBlock),
         (status = 404, body = ErrorResponse),
@@ -63,7 +63,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "project_blocks",
+    tags = ["Project Block"],
     request_body = NewProjectBlock,
     responses(
         (status = 201, description = "ProjectBlock created", body = ProjectBlock),
@@ -99,7 +99,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "project_blocks",
+    tags = ["Project Block"],
     request_body = UpdateProjectBlock,
     responses(
         (status = 200, description = "ProjectBlock updated", body = ProjectBlock),
@@ -135,7 +135,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "project_blocks",
+    tags = ["Project Block"],
     responses(
         (status = 200, description = "ProjectBlock deleted", body = ProjectBlock),
         (status = 404, body = ErrorResponse),

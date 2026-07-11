@@ -1,14 +1,17 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use super::{NewComment, UpdateComment, repository};
+use super::{Comment, NewComment, UpdateComment, repository};
 use crate::{
     DbPool,
     config::error_handler::{AppError, ErrorResponse},
-    modules::{self, comments::Comment},
+    middlewares::auth::AuthContext,
+    modules,
 };
 
+const TAG: &str = "Comment";
+
 #[utoipa::path(
-    tag = "comments",
+    tags = [TAG],
     responses(
         (status = 200, description = "List of comments", body = [Comment]),
         (status = 500, body = ErrorResponse)
@@ -28,9 +31,9 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "comments",
+    tags = [TAG],
     responses(
-        (status = 200, description = "Comment", body = Comment),
+        (status = 200, description = "Return single comment by id", body = Comment),
         (status = 404, body = ErrorResponse),
         (status = 500, body = ErrorResponse)
     ),
@@ -60,7 +63,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "comments",
+    tags = [TAG],
     request_body = NewComment,
     responses(
         (status = 201, description = "Comment created", body = Comment),
@@ -72,21 +75,32 @@ pub async fn one(
 )]
 #[post("")]
 pub async fn insert(
+    auth: web::ReqData<AuthContext>,
     pool: web::Data<DbPool>,
     body_json: web::Json<NewComment>,
 ) -> Result<impl Responder, AppError> {
-    let comment = body_json.into_inner();
+    let mut comment = body_json.into_inner();
+
+    let auth_context = auth.into_inner();
+    let uuid = auth_context.user.uuid;
+    comment.author_uuid = uuid;
 
     let mut conn = pool
         .get()
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    // Check blogpost exist
-    let _ = modules::blogposts::repository::one(&mut conn, comment.blogpost_id)
+    let blogpost = modules::blogposts::repository::one(&mut conn, comment.blogpost_id)
         .await
         .map_err(AppError::from)?
         .ok_or_else(|| AppError::not_found("Blogpost not found".to_string()))?;
+
+    // TODO: Check if blog post is open to comments
+    if !blogpost.is_visible {
+        return Err(AppError::unauthorized(
+            "You can't comment on this blogpost".to_string(),
+        ));
+    }
 
     let data = repository::insert(&mut conn, comment)
         .await
@@ -96,7 +110,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "comments",
+    tags = [TAG],
     request_body = UpdateComment,
     responses(
         (status = 200, description = "Comment updated", body = Comment),
@@ -132,7 +146,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "comments",
+    tags = [TAG],
     responses(
         (status = 200, description = "Comment deleted", body = Comment),
         (status = 404, body = ErrorResponse),

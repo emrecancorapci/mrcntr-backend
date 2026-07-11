@@ -5,7 +5,7 @@ use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use validator::Validate;
 
 #[utoipa::path(
-    tag = "users",
+    tags = ["User"],
     responses(
         (status = 200, description = "List of users", body = [UserResponse]),
         (status = 500, body = ErrorResponse)
@@ -26,7 +26,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tag = "users",
+    tags = ["User"],
     responses(
         (status = 200, description = "User detail", body = UserResponse),
         (status = 400, body = ErrorResponse),
@@ -64,7 +64,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tag = "users",
+    tags = ["User"],
     request_body = NewUserBody,
     responses(
         (status = 201, description = "User created", body = UserResponse),
@@ -99,7 +99,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tag = "users",
+    tags = ["User"],
     request_body = UpdateUserBody,
     responses(
         (status = 200, description = "User updated", body = UserResponse),
@@ -151,7 +151,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tag = "users",
+    tags = ["User"],
     responses(
         (status = 200, description = "User deleted", body = UserResponse),
         (status = 400, body = ErrorResponse),

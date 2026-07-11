@@ -4,7 +4,7 @@ use super::{NewProjectType, ProjectType, UpdateProjectType, repository};
 use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}};
 
 #[utoipa::path(
-    tags = ["project_types", "projects"],
+    tags = ["Project Type"],
     responses(
         (status = 200, description = "ProjectTypes", body = Vec<ProjectType>),
         (status = 500, body = ErrorResponse)
@@ -23,7 +23,7 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
 }
 
 #[utoipa::path(
-    tags = ["project_types", "projects"],
+    tags = ["Project Type"],
     responses(
         (status = 200, description = "ProjectType", body = ProjectType),
         (status = 404, body = ErrorResponse),
@@ -54,7 +54,7 @@ pub async fn one(
 }
 
 #[utoipa::path(
-    tags = ["project_types", "projects"],
+    tags = ["Project Type"],
     responses(
         (status = 201, description = "ProjectType created", body = ProjectType),
         (status = 500, body = ErrorResponse)
@@ -80,7 +80,7 @@ pub async fn insert(
 }
 
 #[utoipa::path(
-    tags = ["project_types", "projects"],
+    tags = ["Project Type"],
     responses(
         (status = 200, description = "ProjectType updated", body = ProjectType),
         (status = 404, body = ErrorResponse),
@@ -113,7 +113,7 @@ pub async fn update(
 }
 
 #[utoipa::path(
-    tags = ["project_types", "projects"],
+    tags = ["Project Type"],
     responses(
         (status = 200, description = "ProjectType deleted", body = ProjectType),
         (status = 404, body = ErrorResponse),

@@ -21,6 +21,16 @@ pub fn routes(cfg: &mut ServiceConfig) {
                         .service(experiences::insert)
                         .service(experiences::update)
                         .service(experiences::delete),
+                )
+                .service(
+                    scope("/{id}/tags").service(
+                        scope("")
+                            .wrap(from_fn(strict_to(&ADMIN)))
+                            .wrap(from_fn(auth))
+                            .service(experiences_tags::insert_many)
+                            .service(experiences_tags::replace_many_by_experience_id)
+                            .service(experiences_tags::delete),
+                    ),
                 ),
         )
         .service(
@@ -183,17 +193,6 @@ pub fn routes(cfg: &mut ServiceConfig) {
                     .service(project_ai_usages::insert)
                     .service(project_ai_usages::update)
                     .service(project_ai_usages::delete),
-            ),
-        )
-        .service(
-            scope("/experiences-tags").service(
-                scope("")
-                    .wrap(from_fn(strict_to(&ADMIN)))
-                    .wrap(from_fn(auth))
-                    .service(experiences_tags::insert_one)
-                    .service(experiences_tags::insert_many)
-                    .service(experiences_tags::replace_many_by_experience_id)
-                    .service(experiences_tags::delete),
             ),
         );
 }
