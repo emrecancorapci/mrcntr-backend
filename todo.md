@@ -42,6 +42,7 @@
   - [X] Projects
   - [X] Users
   - [X] Tags
+- [ ] Documenting (OAuth)
 - [ ] CORS Settings
 
 #### Before Release
