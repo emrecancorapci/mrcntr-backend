@@ -1,7 +1,5 @@
-use actix_web::{
-    middleware::from_fn,
-    web::{ServiceConfig, scope},
-};
+use actix_web::middleware::from_fn;
+use utoipa_actix_web::{scope, service_config::ServiceConfig};
 
 use crate::{
     middlewares::auth::{auth_middleware as auth, strict_to},
