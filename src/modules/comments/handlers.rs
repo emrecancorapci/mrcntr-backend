@@ -1,8 +1,20 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
 use super::{NewComment, UpdateComment, repository};
-use crate::{DbPool, config::error_handler::AppError, modules};
+use crate::{
+    DbPool,
+    config::error_handler::{AppError, ErrorResponse},
+    modules::{self, comments::Comment},
+};
 
+#[utoipa::path(
+    tag = "comments",
+    responses(
+        (status = 200, description = "List of comments", body = [Comment]),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(())
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -15,6 +27,18 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     return Ok(HttpResponse::Ok().json(data));
 }
 
+#[utoipa::path(
+    tag = "comments",
+    responses(
+        (status = 200, description = "Comment", body = Comment),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Comment id")
+    ),
+    security(())
+)]
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -35,6 +59,17 @@ pub async fn one(
     return Ok(HttpResponse::Ok().json(data));
 }
 
+#[utoipa::path(
+    tag = "comments",
+    request_body = NewComment,
+    responses(
+        (status = 201, description = "Comment created", body = Comment),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -60,6 +95,20 @@ pub async fn insert(
     return Ok(HttpResponse::Created().json(data));
 }
 
+#[utoipa::path(
+    tag = "comments",
+    request_body = UpdateComment,
+    responses(
+        (status = 200, description = "Comment updated", body = Comment),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Comment id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -82,6 +131,18 @@ pub async fn update(
     return Ok(HttpResponse::Ok().json(data));
 }
 
+#[utoipa::path(
+    tag = "comments",
+    responses(
+        (status = 200, description = "Comment deleted", body = Comment),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Comment id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

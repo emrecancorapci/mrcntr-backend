@@ -1,8 +1,17 @@
 use actix_web::{HttpResponse, Responder, delete, post, put, web};
 
 use super::{ExperienceTag, InsertManyExperienceTagsBody, repository};
-use crate::{DbPool, config::error_handler::AppError};
+use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}};
 
+#[utoipa::path(
+    tag = "experiences-tags",
+    request_body = ExperienceTag,
+    responses(
+        (status = 201, description = "Experience tag created", body = ExperienceTag),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert_one(
     pool: web::Data<DbPool>,
@@ -22,6 +31,15 @@ pub async fn insert_one(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "experiences-tags",
+    request_body = InsertManyExperienceTagsBody,
+    responses(
+        (status = 201, description = "Experience tags created", body = [ExperienceTag]),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("/bulk")]
 pub async fn insert_many(
     pool: web::Data<DbPool>,
@@ -50,6 +68,18 @@ pub async fn insert_many(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "experiences-tags",
+    request_body = Vec<ExperienceTag>,
+    responses(
+        (status = 201, description = "Experience tags replaced", body = [ExperienceTag]),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("experience_id" = i32, Path, description = "Experience id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[put("/experience/{experience_id}")]
 pub async fn replace_many_by_experience_id(
     pool: web::Data<DbPool>,
@@ -71,6 +101,18 @@ pub async fn replace_many_by_experience_id(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "experiences-tags",
+    responses(
+        (status = 200, description = "Experience tag deleted", body = ExperienceTag),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("experience_id" = i32, Path, description = "Experience id"),
+        ("tag_id" = i32, Path, description = "Tag id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/experience/{experience_id}/tag/{tag_id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

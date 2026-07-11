@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 use crate::modules::users::{PASS_MAX_LEN, PASS_MIN_LEN};
@@ -9,14 +10,14 @@ pub struct Claims {
     pub exp: usize,
 }
 
-#[derive(Validate, Debug, Deserialize)]
+#[derive(Validate, ToSchema, Debug, Deserialize)]
 pub struct LoginRequest {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = (PASS_MIN_LEN as u64), max = (PASS_MAX_LEN as u64)))]
     pub password: String,
 }
-#[derive(Debug, Serialize)]
+#[derive(ToSchema, Debug, Serialize)]
 pub struct AuthResponse {
     pub token: String,
 }

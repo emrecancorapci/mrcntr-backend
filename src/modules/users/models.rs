@@ -4,12 +4,13 @@ use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use utoipa::ToSchema;
 use validator::Validate;
 
 pub const PASS_MIN_LEN: u8 = 12;
 pub const PASS_MAX_LEN: u8 = 128;
 
-#[derive(Queryable, Selectable, Validate, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Validate, Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[diesel(table_name = schema::users)]
 #[diesel(belongs_to(Role))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -41,7 +42,7 @@ pub struct NewUser {
     pub role_id: i32,
 }
 
-#[derive(Validate, Serialize, Deserialize)]
+#[derive(Validate, Serialize, Deserialize, ToSchema)]
 pub struct NewUserBody {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
@@ -67,7 +68,7 @@ pub struct UpdateUser {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Validate, Serialize, Deserialize)]
+#[derive(Validate, Serialize, Deserialize, ToSchema)]
 pub struct UpdateUserBody {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
@@ -80,7 +81,7 @@ pub struct UpdateUserBody {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct UserResponse {
     pub uuid: Uuid,
     pub email: String,

@@ -5,13 +5,22 @@ use super::{
 };
 use crate::{
     DbPool, REDIS_USER_DATA, REDIS_USER_TOKEN, RedisPool,
-    config::error_handler::AppError,
+    config::error_handler::{AppError, ErrorResponse},
     modules::users::{NewUser, UserResponse},
 };
 
 use actix_web::{HttpResponse, Responder, post, web};
 use validator::Validate;
 
+#[utoipa::path(
+    tag="auth",
+    responses(
+        (status = 200, description = "Credentials are valid", body=AuthResponse),
+        (status = 400, description = "Credentials are invalid", body=ErrorResponse),
+        (status = 500, body=ErrorResponse)
+    ),
+    params()
+)]
 #[post("/register")]
 pub async fn register(
     pool: web::Data<DbPool>,
@@ -78,6 +87,15 @@ pub async fn register(
     Ok(HttpResponse::Ok().json(AuthResponse { token }))
 }
 
+#[utoipa::path(
+    tag="auth",
+    responses(
+        (status = 200, description = "Credentials are valid", body=AuthResponse),
+        (status = 400, description = "Credentials are invalid", body=ErrorResponse),
+        (status = 500, body=ErrorResponse)
+    ),
+    params()
+)]
 #[post("/login")]
 pub async fn login(
     pool: web::Data<DbPool>,

@@ -1,7 +1,7 @@
 use super::{NewProject, NewProjectRequest, ProjectResponse, UpdateProject, repository, submodules::tags};
 use crate::{
     DbPool,
-    config::error_handler::AppError,
+    config::error_handler::{AppError, ErrorResponse},
     modules::{project_blocks, project_links, tags::Tag},
 };
 
@@ -9,6 +9,14 @@ use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use diesel_async::AsyncConnection;
 use validator::Validate;
 
+#[utoipa::path(
+    tag = "projects",
+    responses(
+        (status = 200, description = "List of projects", body = [ProjectResponse]),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(())
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -21,6 +29,18 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    responses(
+        (status = 200, description = "Project detail", body = ProjectResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Project id")
+    ),
+    security(())
+)]
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -52,6 +72,16 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    request_body = NewProjectRequest,
+    responses(
+        (status = 201, description = "Project created", body = ProjectResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -117,6 +147,20 @@ pub async fn insert(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    request_body = UpdateProject,
+    responses(
+        (status = 200, description = "Project updated", body = ProjectResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -144,6 +188,18 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    responses(
+        (status = 200, description = "Project deleted", body = ProjectResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

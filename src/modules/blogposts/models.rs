@@ -3,9 +3,10 @@ use crate::config::schema;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Queryable, Selectable, Identifiable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Identifiable, ToSchema, Serialize, Deserialize, Clone)]
 #[diesel(table_name = schema::blogposts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Blogpost {
@@ -22,7 +23,7 @@ pub struct Blogpost {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Debug, Clone, Deserialize)]
+#[derive(Insertable, ToSchema, Deserialize, Clone)]
 #[diesel(table_name = schema::blogposts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewBlogpost {
@@ -33,7 +34,7 @@ pub struct NewBlogpost {
     pub is_visible: bool,
 }
 
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, ToSchema, Deserialize)]
 #[diesel(table_name = schema::blogposts)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateBlogpost {

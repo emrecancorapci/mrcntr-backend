@@ -1,8 +1,16 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use super::{NewProjectAiUsage, UpdateProjectAiUsage, repository};
-use crate::{DbPool, config::error_handler::AppError};
+use super::{NewProjectAiUsage, ProjectAiUsage, UpdateProjectAiUsage, repository};
+use crate::{AppError, DbPool, config::error_handler::ErrorResponse};
 
+#[utoipa::path(
+    tag="project",
+    responses(
+        (status = 200, description = "ProjectAIUsage found from database", body=Vec<ProjectAiUsage>),
+        (status = 500, body=ErrorResponse)
+    ),
+    params()
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -10,10 +18,21 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::many(&mut conn).await.map_err(AppError::from)?;
+    let data: Vec<ProjectAiUsage> = repository::many(&mut conn).await.map_err(AppError::from)?;
+
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag="project",
+    responses(
+        (status = 200, description = "ProjectAIUsage found from database", body=Vec<ProjectAiUsage>),
+        (status = 500, body=ErrorResponse)
+    ),
+    params(
+        ("id", description = "Project AI Usage id")
+    )
+)]
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -34,6 +53,14 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag="project",
+    responses(
+        (status = 201, description = "ProjectAIUsage created", body = ProjectAiUsage),
+        (status = 500, body = ErrorResponse)
+    ),
+    params()
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -53,6 +80,16 @@ pub async fn insert(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag="project",
+    responses(
+        (status = 200, description = "ProjectAIUsage updated", body = ProjectAiUsage),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id", description = "Project AI Usage id")
+    )
+)]
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -75,6 +112,16 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag="project",
+    responses(
+        (status = 200, description = "ProjectAIUsage deleted", body = ProjectAiUsage),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id", description = "Project AI Usage id")
+    )
+)]
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

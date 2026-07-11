@@ -7,8 +7,16 @@ use super::{
     experiences_tags::{self, ExperienceTag},
     repository,
 };
-use crate::{DbPool, config::error_handler::AppError, modules::tags};
+use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}, modules::tags};
 
+#[utoipa::path(
+    tag = "experiences",
+    responses(
+        (status = 200, description = "List of experiences", body = [ExperienceResponse]),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(())
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -28,6 +36,18 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "experiences",
+    responses(
+        (status = 200, description = "Experience detail", body = ExperienceResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Experience id")
+    ),
+    security(())
+)]
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -52,6 +72,16 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "experiences",
+    request_body = ExperienceInsertBody,
+    responses(
+        (status = 201, description = "Experience created", body = ExperienceResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -106,6 +136,20 @@ pub async fn insert(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "experiences",
+    request_body = ExperienceUpdateBody,
+    responses(
+        (status = 200, description = "Experience updated", body = ExperienceResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Experience id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -164,6 +208,18 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "experiences",
+    responses(
+        (status = 200, description = "Experience deleted", body = ExperienceResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Experience id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

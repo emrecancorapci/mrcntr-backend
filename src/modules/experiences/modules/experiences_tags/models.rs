@@ -1,10 +1,11 @@
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::schema;
 
 #[derive(
-    Identifiable, Insertable, Selectable, Queryable, Associations, Serialize, Deserialize, Debug,
+    Identifiable, Insertable, Selectable, Queryable, Associations, Serialize, Deserialize, Debug, ToSchema,
 )]
 #[diesel(table_name = schema::experiences_tags)]
 #[diesel(belongs_to(crate::modules::experiences::Experience))]
@@ -17,13 +18,13 @@ pub struct ExperienceTag {
     pub sort_order: Option<i16>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct InsertManyExperienceTagsItem {
     pub tag_id: i32,
     pub sort: Option<i16>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct InsertManyExperienceTagsBody {
     pub experience_id: i32,
     pub tags: Vec<InsertManyExperienceTagsItem>,

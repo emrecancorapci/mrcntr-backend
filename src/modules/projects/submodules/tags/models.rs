@@ -1,11 +1,12 @@
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::modules::{projects::*, tags::*};
 use crate::schema;
 
 #[derive(
-    Identifiable, Insertable, Selectable, Queryable, Associations, Serialize, Deserialize, Debug,
+    Identifiable, Insertable, Selectable, Queryable, Associations, Serialize, Deserialize, Debug, ToSchema,
 )]
 #[diesel(table_name = schema::projects_tags)]
 #[diesel(belongs_to(Project))]
@@ -19,7 +20,7 @@ pub struct ProjectTag {
     pub sort_order: i16,
 }
 
-#[derive(Insertable, Serialize, Deserialize, Debug)]
+#[derive(Insertable, Serialize, Deserialize, Debug, ToSchema)]
 #[diesel(table_name = schema::projects_tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProjectTag {
@@ -36,7 +37,7 @@ pub struct NewProjectTagRequest {
     pub sort_order: i16,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct TagInsertItem {
     pub tag_id: i32,
     pub is_featured: Option<bool>,

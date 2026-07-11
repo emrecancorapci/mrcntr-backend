@@ -1,8 +1,15 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use super::{NewProjectLink, UpdateProjectLink, repository};
-use crate::{DbPool, config::error_handler::AppError};
+use super::{NewProjectLink, ProjectLink, UpdateProjectLink, repository};
+use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}};
 
+#[utoipa::path(
+    tag = "project_links",
+    responses(
+        (status = 200, description = "ProjectLinks", body = Vec<ProjectLink>),
+        (status = 500, body = ErrorResponse)
+    )
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -15,6 +22,17 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tags = ["project_links", "projects"],
+    responses(
+        (status = 200, description = "ProjectLink", body = ProjectLink),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(   
+        ("id" = i32, description = "ProjectLink ID")
+    )
+)]
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -35,6 +53,13 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tags = ["project_links", "projects"],
+    responses(
+        (status = 201, description = "ProjectLink created", body = ProjectLink),
+        (status = 500, body = ErrorResponse)
+    )
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -57,13 +82,24 @@ pub async fn insert(
     }
 }
 
+#[utoipa::path(
+    tags = ["project_links", "projects"],
+    responses(
+        (status = 200, description = "ProjectLink updated", body = ProjectLink),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(   
+        ("id" = i32, description = "ProjectLink ID")
+    )
+)]
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
     path: web::Path<i32>,
     body_json: web::Json<UpdateProjectLink>,
 ) -> Result<impl Responder, AppError> {
-    let project = body_json.into_inner();
+    let project_link = body_json.into_inner();
     let id = path.into_inner();
 
     let mut conn = pool
@@ -71,7 +107,7 @@ pub async fn update(
         .await
         .map_err(|err| AppError::internal(err.to_string()))?;
 
-    let data = repository::update(&mut conn, id, project)
+    let data = repository::update(&mut conn, id, project_link)
         .await
         .map_err(AppError::from)?
         .ok_or_else(|| AppError::not_found("ProjectLink not found".to_string()))?;
@@ -79,6 +115,17 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tags = ["project_links", "projects"],
+    responses(
+        (status = 200, description = "ProjectLink deleted", body = ProjectLink),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(   
+        ("id" = i32, description = "ProjectLink ID")
+    )
+)]
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

@@ -3,6 +3,7 @@ use crate::{config::schema, modules::projects::Project};
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 #[derive(
@@ -11,10 +12,10 @@ use validator::Validate;
     Validate,
     Identifiable,
     Associations,
-    Debug,
-    Clone,
+    ToSchema,
     Serialize,
     Deserialize,
+    Clone,
 )]
 #[diesel(table_name = schema::project_links)]
 #[diesel(belongs_to(Project))]
@@ -32,19 +33,17 @@ pub struct ProjectLink {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Validate, Debug, Clone, Deserialize)]
+#[derive(Insertable, ToSchema, Clone, Deserialize)]
 #[diesel(table_name = schema::project_links)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProjectLink {
     pub sort_order: i16,
-    #[validate(length(min = 3))]
     pub title: String,
-    #[validate(url)]
     pub link: String,
     pub project_id: i32,
 }
 
-#[derive(AsChangeset, Validate, Deserialize)]
+#[derive(AsChangeset, ToSchema, Validate, Deserialize)]
 #[diesel(table_name = schema::project_links)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateProjectLink {
@@ -56,7 +55,7 @@ pub struct UpdateProjectLink {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Deserialize, Validate, Clone)]
+#[derive(Deserialize, ToSchema, Validate, Clone)]
 pub struct NewProjectLinkRequest {
     pub sort_order: i16,
     #[validate(length(min = 3))]

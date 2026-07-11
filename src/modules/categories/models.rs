@@ -5,7 +5,9 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Queryable, Selectable, Serialize, Deserialize)]
+use utoipa::ToSchema;
+
+#[derive(Queryable, Selectable, Serialize, Deserialize, ToSchema)]
 #[diesel(table_name = schema::categories)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Category {
@@ -16,7 +18,7 @@ pub struct Category {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Validate, Deserialize)]
+#[derive(Insertable, Validate, Deserialize, ToSchema)]
 #[diesel(table_name = schema::categories)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewCategory {
@@ -35,7 +37,7 @@ pub struct UpdateCategory {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Validate, Deserialize)]
+#[derive(Validate, Deserialize, ToSchema)]
 pub struct UpdateCategoryRequest {
     #[validate(length(min = 3))]
     pub slug: Option<String>,
@@ -43,7 +45,7 @@ pub struct UpdateCategoryRequest {
     pub title: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct CategoryResponse {
     pub slug: String,
     pub title: String,

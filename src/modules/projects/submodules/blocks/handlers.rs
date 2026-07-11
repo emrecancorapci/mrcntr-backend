@@ -1,7 +1,18 @@
 use actix_web::{HttpResponse, Responder, delete, get, post, web};
 
-use crate::{AppError, DbPool, modules::project_blocks::{NewProjectBlock, NewProjectBlockRequest, repository}};
+use crate::{AppError, DbPool, config::error_handler::ErrorResponse, modules::project_blocks::{NewProjectBlock, NewProjectBlockRequest, ProjectBlock, repository}};
 
+#[utoipa::path(
+    tag = "projects",
+    responses(
+        (status = 200, description = "List of project blocks", body = [ProjectBlock]),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("project_id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[get("")]
 pub async fn many_by_project_id(
     pool: web::Data<DbPool>,
@@ -20,6 +31,18 @@ pub async fn many_by_project_id(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    request_body = NewProjectBlockRequest,
+    responses(
+        (status = 201, description = "Project block created", body = ProjectBlock),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("project_id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert_by_project_id(
     pool: web::Data<DbPool>,
@@ -46,6 +69,17 @@ pub async fn insert_by_project_id(
     }
 }
 
+#[utoipa::path(
+    tag = "projects",
+    responses(
+        (status = 200, description = "Project blocks deleted", body = [ProjectBlock]),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("project_id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("")]
 pub async fn delete_many_by_project_id(
     pool: web::Data<DbPool>,

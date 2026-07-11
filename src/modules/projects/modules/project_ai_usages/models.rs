@@ -2,8 +2,9 @@ use crate::config::schema;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, ToSchema, Serialize, Deserialize, Clone)]
 #[diesel(table_name = schema::project_ai_usages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ProjectAiUsage {
@@ -16,7 +17,7 @@ pub struct ProjectAiUsage {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Debug, Clone, Deserialize)]
+#[derive(Insertable, ToSchema, Deserialize, Clone)]
 #[diesel(table_name = schema::project_ai_usages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProjectAiUsage {
@@ -25,7 +26,7 @@ pub struct NewProjectAiUsage {
     pub description: Option<String>,
 }
 
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, ToSchema, Deserialize)]
 #[diesel(table_name = schema::project_ai_usages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateProjectAiUsage {

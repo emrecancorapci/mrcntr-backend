@@ -2,19 +2,25 @@ use super::modules::{
     project_ai_usages::ProjectAiUsage, project_statuses::ProjectStatus, project_types::ProjectType,
 };
 use crate::{
-    config::schema, modules::{project_blocks::{NewProjectBlockRequest, ProjectBlock}, project_links::ProjectLink, tags::Tag},
+    config::schema,
+    modules::{
+        project_blocks::{NewProjectBlockRequest, ProjectBlock},
+        project_links::ProjectLink,
+        tags::Tag,
+    },
 };
 
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 const TITLE_MIN_LEN: u8 = 3;
 const DESC_MIN_LEN: u8 = 3;
 const CONTENT_MIN_LEN: u8 = 3;
 
-#[derive(Queryable, Selectable, Validate, Identifiable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Validate, Identifiable, ToSchema, Serialize, Deserialize)]
 #[diesel(table_name = schema::projects)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Project {
@@ -39,17 +45,13 @@ pub struct Project {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Validate, Debug, Clone, Serialize, Deserialize)]
+#[derive(Insertable)]
 #[diesel(table_name = schema::projects)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProject {
-    #[validate(length(min = (TITLE_MIN_LEN as u64)))]
     pub title: String,
-    #[validate(length(min = (DESC_MIN_LEN as u64)))]
     pub project_description: String,
-    #[validate(length(min = (CONTENT_MIN_LEN as u64)))]
     pub content: String,
-    #[validate(range(min = 2020))]
     pub year_created_at: i16,
     pub latest_version: Option<String>,
     pub project_status_id: Option<i32>,
@@ -60,7 +62,7 @@ pub struct NewProject {
     pub published_at: Option<DateTime<Utc>>,
 }
 
-#[derive(AsChangeset, Validate, Deserialize)]
+#[derive(AsChangeset, ToSchema, Validate, Deserialize)]
 #[diesel(table_name = schema::projects)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateProject {
@@ -81,7 +83,7 @@ pub struct UpdateProject {
     pub published_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ProjectResponse {
     pub id: i32,
     pub title: String,
@@ -115,7 +117,7 @@ pub struct ProjectResponse {
     pub published_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Validate, Deserialize, Clone)]
+#[derive(Validate, ToSchema, Deserialize, Clone)]
 pub struct NewProjectRequest {
     #[validate(length(min = (TITLE_MIN_LEN as u64)))]
     pub title: String,
@@ -141,7 +143,7 @@ pub struct NewProjectRequest {
     pub tags: Vec<i32>,
 }
 
-#[derive(Validate, Deserialize, Clone)]
+#[derive(Validate, ToSchema, Deserialize, Clone)]
 pub struct NewProjectLinkRequest {
     pub sort_order: i16,
     #[validate(length(min = 3))]

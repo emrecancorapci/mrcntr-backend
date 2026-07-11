@@ -4,10 +4,18 @@ use validator::Validate;
 use super::{UpdateTag, repository};
 use crate::{
     DbPool,
-    config::error_handler::AppError,
+    config::error_handler::{AppError, ErrorResponse},
     modules::tags::{NewTag, TagResponse},
 };
 
+#[utoipa::path(
+    tag = "tags",
+    responses(
+        (status = 200, description = "List of tags", body = [TagResponse]),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(())
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -25,6 +33,18 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "tags",
+    responses(
+        (status = 200, description = "Tag detail", body = TagResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Tag id")
+    ),
+    security(())
+)]
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -46,6 +66,16 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "tags",
+    request_body = NewTag,
+    responses(
+        (status = 201, description = "Tag created", body = TagResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -68,6 +98,20 @@ pub async fn insert(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "tags",
+    request_body = UpdateTag,
+    responses(
+        (status = 200, description = "Tag updated", body = TagResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Tag id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -93,6 +137,18 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "tags",
+    responses(
+        (status = 200, description = "Tag deleted", body = TagResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("id" = i32, Path, description = "Tag id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

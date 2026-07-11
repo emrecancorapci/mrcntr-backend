@@ -6,9 +6,10 @@ use crate::{
 use chrono::{DateTime, NaiveDate, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Queryable, Identifiable, Selectable, Validate, Serialize, PartialEq, Debug, Clone)]
+#[derive(Queryable, Identifiable, Selectable, Validate, Serialize, PartialEq, Debug, Clone, ToSchema)]
 #[diesel(table_name = schema::experiences)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Experience {
@@ -28,7 +29,7 @@ pub struct Experience {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Validate, Clone, Deserialize)]
+#[derive(Insertable, Validate, Clone, Deserialize, ToSchema)]
 #[diesel(table_name = schema::experiences)]
 pub struct NewExperience {
     #[validate(length(min = 3))]
@@ -43,7 +44,7 @@ pub struct NewExperience {
     pub is_active: bool,
 }
 
-#[derive(AsChangeset, Validate, Clone, Deserialize)]
+#[derive(AsChangeset, Validate, Clone, Deserialize, ToSchema)]
 #[diesel(table_name = schema::experiences)]
 pub struct UpdateExperience {
     #[validate(length(min = 3))]
@@ -59,7 +60,7 @@ pub struct UpdateExperience {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Validate, Deserialize)]
+#[derive(Validate, Deserialize, ToSchema)]
 pub struct ExperienceInsertBody {
     #[validate(length(min = 3))]
     pub title: String,
@@ -88,7 +89,7 @@ impl ExperienceInsertBody {
     }
 }
 
-#[derive(Validate, Deserialize)]
+#[derive(Validate, Deserialize, ToSchema)]
 pub struct ExperienceUpdateBody {
     #[validate(length(min = 3))]
     pub title: Option<String>,
@@ -118,7 +119,7 @@ impl ExperienceUpdateBody {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ExperienceResponse {
     pub id: i32,
     pub title: String,

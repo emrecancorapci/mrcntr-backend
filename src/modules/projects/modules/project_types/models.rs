@@ -3,8 +3,9 @@ use crate::config::schema;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, ToSchema, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::project_types)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ProjectType {
@@ -16,7 +17,7 @@ pub struct ProjectType {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Debug, Clone, Deserialize)]
+#[derive(Insertable, ToSchema, Clone, Deserialize)]
 #[diesel(table_name = schema::project_types)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProjectType {
@@ -24,7 +25,7 @@ pub struct NewProjectType {
     pub sort_order: i16,
 }
 
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, ToSchema, Deserialize)]
 #[diesel(table_name = schema::project_types)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateProjectType {

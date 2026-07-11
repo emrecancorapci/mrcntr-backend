@@ -3,10 +3,11 @@ use crate::{config::schema, modules::projects::Project};
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 #[derive(
-    Queryable, Selectable, Identifiable, Associations, Debug, Clone, Serialize, Deserialize,
+    Queryable, Selectable, Identifiable, Associations, ToSchema, Serialize, Deserialize, Clone,
 )]
 #[diesel(table_name = schema::project_blocks)]
 #[diesel(belongs_to(Project))]
@@ -23,7 +24,7 @@ pub struct ProjectBlock {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Deserialize)]
+#[derive(Insertable, ToSchema, Deserialize)]
 #[diesel(table_name = schema::project_blocks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewProjectBlock {
@@ -34,7 +35,7 @@ pub struct NewProjectBlock {
     pub is_active: bool,
 }
 
-#[derive(Deserialize, Validate, Clone)]
+#[derive(ToSchema, Validate, Deserialize, Clone)]
 pub struct NewProjectBlockRequest {
     #[validate(length(min = 3))]
     pub title: String,
@@ -56,7 +57,7 @@ impl NewProjectBlock {
     }
 }
 
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, ToSchema, Deserialize)]
 #[diesel(table_name = schema::project_blocks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateProjectBlock {

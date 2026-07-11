@@ -1,9 +1,17 @@
 use super::{NewUser, NewUserBody, UpdateUser, UpdateUserBody, UserResponse, repository};
-use crate::{AppError, DbPool, modules::auth::helpers::hash_password};
+use crate::{AppError, DbPool, config::error_handler::ErrorResponse, modules::auth::helpers::hash_password};
 
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use validator::Validate;
 
+#[utoipa::path(
+    tag = "users",
+    responses(
+        (status = 200, description = "List of users", body = [UserResponse]),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -17,6 +25,19 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "users",
+    responses(
+        (status = 200, description = "User detail", body = UserResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("uuid" = String, Path, description = "User UUID")
+    ),
+    security(("token_jwt" = []))
+)]
 #[get("/{uuid}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -42,6 +63,16 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "users",
+    request_body = NewUserBody,
+    responses(
+        (status = 201, description = "User created", body = UserResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -67,6 +98,20 @@ pub async fn insert(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "users",
+    request_body = UpdateUserBody,
+    responses(
+        (status = 200, description = "User updated", body = UserResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("uuid" = String, Path, description = "User UUID")
+    ),
+    security(("token_jwt" = []))
+)]
 #[patch("/{uuid}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -105,6 +150,19 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "users",
+    responses(
+        (status = 200, description = "User deleted", body = UserResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("uuid" = String, Path, description = "User UUID")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/{uuid}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

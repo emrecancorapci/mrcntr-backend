@@ -1,10 +1,18 @@
 use super::{CategoryResponse, NewCategory, UpdateCategory, UpdateCategoryRequest, repository};
-use crate::{DbPool, config::error_handler::AppError};
+use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}};
 
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 use chrono::Utc;
 use validator::Validate;
 
+#[utoipa::path(
+    tag = "categories",
+    responses(
+        (status = 200, description = "List of categories", body = [CategoryResponse]),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(())
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -22,6 +30,18 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "categories",
+    responses(
+        (status = 200, description = "Category detail", body = CategoryResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("slug" = String, Path, description = "Category slug")
+    ),
+    security(())
+)]
 #[get("/{slug}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -43,6 +63,16 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "categories",
+    request_body = NewCategory,
+    responses(
+        (status = 201, description = "Category created", body = CategoryResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -65,6 +95,20 @@ pub async fn insert(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "categories",
+    request_body = UpdateCategoryRequest,
+    responses(
+        (status = 200, description = "Category updated", body = CategoryResponse),
+        (status = 400, body = ErrorResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("slug" = String, Path, description = "Category slug")
+    ),
+    security(("token_jwt" = []))
+)]
 #[patch("/{slug}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -96,6 +140,18 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "categories",
+    responses(
+        (status = 200, description = "Category deleted", body = CategoryResponse),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("slug" = String, Path, description = "Category slug")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/{slug}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

@@ -1,8 +1,15 @@
 use actix_web::{HttpResponse, Responder, delete, get, patch, post, web};
 
-use super::{NewProjectType, UpdateProjectType, repository};
-use crate::{DbPool, config::error_handler::AppError};
+use super::{NewProjectType, ProjectType, UpdateProjectType, repository};
+use crate::{DbPool, config::error_handler::{AppError, ErrorResponse}};
 
+#[utoipa::path(
+    tags = ["project_types", "projects"],
+    responses(
+        (status = 200, description = "ProjectTypes", body = Vec<ProjectType>),
+        (status = 500, body = ErrorResponse)
+    )
+)]
 #[get("")]
 pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     let mut conn = pool
@@ -15,6 +22,17 @@ pub async fn many(pool: web::Data<DbPool>) -> Result<impl Responder, AppError> {
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tags = ["project_types", "projects"],
+    responses(
+        (status = 200, description = "ProjectType", body = ProjectType),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(   
+        ("id" = i32, description = "ProjectType ID")
+    )
+)]
 #[get("/{id}")]
 pub async fn one(
     pool: web::Data<DbPool>,
@@ -35,6 +53,13 @@ pub async fn one(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tags = ["project_types", "projects"],
+    responses(
+        (status = 201, description = "ProjectType created", body = ProjectType),
+        (status = 500, body = ErrorResponse)
+    )
+)]
 #[post("")]
 pub async fn insert(
     pool: web::Data<DbPool>,
@@ -54,6 +79,17 @@ pub async fn insert(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tags = ["project_types", "projects"],
+    responses(
+        (status = 200, description = "ProjectType updated", body = ProjectType),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(   
+        ("id" = i32, description = "ProjectType ID")
+    )
+)]
 #[patch("/{id}")]
 pub async fn update(
     pool: web::Data<DbPool>,
@@ -76,6 +112,17 @@ pub async fn update(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tags = ["project_types", "projects"],
+    responses(
+        (status = 200, description = "ProjectType deleted", body = ProjectType),
+        (status = 404, body = ErrorResponse),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(   
+        ("id" = i32, description = "ProjectType ID")
+    )
+)]
 #[delete("/{id}")]
 pub async fn delete(
     pool: web::Data<DbPool>,

@@ -3,9 +3,10 @@ use crate::config::schema;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Queryable, Selectable, Identifiable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Identifiable, ToSchema, Clone, Serialize, Deserialize)]
 #[diesel(table_name = schema::comments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Comment {
@@ -19,7 +20,7 @@ pub struct Comment {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Debug, Clone, Deserialize)]
+#[derive(Insertable, ToSchema, Clone, Deserialize)]
 #[diesel(table_name = schema::comments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewComment {
@@ -28,7 +29,7 @@ pub struct NewComment {
     pub parent_comment_id: Option<i32>,
 }
 
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, ToSchema, Deserialize)]
 #[diesel(table_name = schema::comments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateComment {

@@ -1,5 +1,5 @@
 use super::{NewProjectTag, ProjectTag, TagInsertItem, repository};
-use crate::{AppError, DbPool, modules::tags::Tag};
+use crate::{AppError, DbPool, config::error_handler::ErrorResponse, modules::tags::Tag};
 
 use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 
@@ -26,6 +26,17 @@ use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 //     Ok(HttpResponse::Created().json(data))
 // }
 
+#[utoipa::path(
+    tag = "projects",
+    responses(
+        (status = 200, description = "List of tags for a project", body = [Tag]),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("project_id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[get("")]
 pub async fn many_by_project_id(
     pool: web::Data<DbPool>,
@@ -50,6 +61,18 @@ pub async fn many_by_project_id(
     Ok(HttpResponse::Ok().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    request_body = Vec<TagInsertItem>,
+    responses(
+        (status = 201, description = "Project tags created", body = [ProjectTag]),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("project_id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[post("")]
 pub async fn insert_by_project_id(
     pool: web::Data<DbPool>,
@@ -76,6 +99,18 @@ pub async fn insert_by_project_id(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    request_body = Vec<ProjectTag>,
+    responses(
+        (status = 201, description = "Project tags replaced", body = [ProjectTag]),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("project_id" = i32, Path, description = "Project id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[put("")]
 pub async fn replace_many_by_project_id(
     pool: web::Data<DbPool>,
@@ -97,6 +132,18 @@ pub async fn replace_many_by_project_id(
     Ok(HttpResponse::Created().json(data))
 }
 
+#[utoipa::path(
+    tag = "projects",
+    responses(
+        (status = 200, description = "Project tag deleted", body = ProjectTag),
+        (status = 500, body = ErrorResponse)
+    ),
+    params(
+        ("project_id" = i32, Path, description = "Project id"),
+        ("tag_id" = i32, Path, description = "Tag id")
+    ),
+    security(("token_jwt" = []))
+)]
 #[delete("/{tag_id}")]
 pub async fn delete_by_project_and_tag_id(
     pool: web::Data<DbPool>,

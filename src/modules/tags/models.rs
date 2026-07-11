@@ -9,9 +9,12 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 use std::io::Write;
+use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Queryable, Selectable, Identifiable, Validate, Serialize, Deserialize, Debug, Clone)]
+#[derive(
+    Queryable, Selectable, Identifiable, Validate, ToSchema, Serialize, Deserialize, Clone,
+)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Tag {
@@ -31,7 +34,7 @@ pub struct Tag {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Insertable, Serialize, Validate, Deserialize, Debug, Clone)]
+#[derive(Insertable, Serialize, Validate, ToSchema, Deserialize, Debug, Clone)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewTag {
@@ -47,7 +50,7 @@ pub struct NewTag {
     pub parent_id: Option<i32>,
 }
 
-#[derive(AsChangeset, Validate, Deserialize, Debug, Clone)]
+#[derive(AsChangeset, Validate, ToSchema, Deserialize, Debug, Clone)]
 #[diesel(table_name = schema::tags)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UpdateTag {
@@ -63,7 +66,7 @@ pub struct UpdateTag {
     pub parent_id: Option<i32>,
 }
 
-#[derive(AsExpression, FromSqlRow, Debug, Serialize, Deserialize, Clone)]
+#[derive(AsExpression, FromSqlRow, ToSchema, Debug, Serialize, Deserialize, Clone)]
 #[diesel(sql_type = schema::sql_types::TagTypes)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub enum TagTypeEnum {
@@ -106,7 +109,7 @@ impl FromSql<schema::sql_types::TagTypes, diesel::pg::Pg> for TagTypeEnum {
     }
 }
 
-#[derive(Serialize)]
+#[derive(ToSchema, Serialize)]
 pub struct TagResponse {
     pub id: i32,
     pub slug: String,
