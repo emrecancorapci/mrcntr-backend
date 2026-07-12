@@ -8,7 +8,7 @@ use crate::{PooledConn, schema::experiences};
 pub async fn one(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, Error> {
     experiences::table
         .find(id)
-        .filter(experiences::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(experiences::deleted_at.is_null())
         .first::<Experience>(conn)
         .await
         .optional()
@@ -16,7 +16,7 @@ pub async fn one(conn: &mut PooledConn, id: &i32) -> Result<Option<Experience>, 
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Experience>, Error> {
     experiences::table
-        .filter(experiences::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(experiences::deleted_at.is_null())
         .order_by(experiences::start_date.desc())
         .load::<Experience>(conn)
         .await

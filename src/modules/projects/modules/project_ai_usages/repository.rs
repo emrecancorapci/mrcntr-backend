@@ -8,7 +8,7 @@ use diesel_async::RunQueryDsl;
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage>, Error> {
     project_ai_usages::table
         .find(id)
-        .filter(project_ai_usages::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(project_ai_usages::deleted_at.is_null())
         .first::<ProjectAiUsage>(conn)
         .await
         .optional()
@@ -16,7 +16,7 @@ pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectAiUsage
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<ProjectAiUsage>, Error> {
     project_ai_usages::table
-        .filter(project_ai_usages::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(project_ai_usages::deleted_at.is_null())
         .order_by(project_ai_usages::id.desc())
         .load::<ProjectAiUsage>(conn)
         .await

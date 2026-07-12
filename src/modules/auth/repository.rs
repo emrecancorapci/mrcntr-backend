@@ -16,7 +16,7 @@ pub async fn one_by_email(conn: &mut PooledConn, email: &str) -> Result<Option<U
         .filter(
             users::email
                 .eq(email)
-                .and(users::deleted_at.eq(Option::<DateTime<Utc>>::None)),
+                .and(users::deleted_at.is_null()),
         )
         .first::<User>(conn)
         .await

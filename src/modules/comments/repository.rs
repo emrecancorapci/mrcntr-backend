@@ -8,7 +8,7 @@ use crate::{PooledConn, schema::comments};
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Comment>, Error> {
     comments::table
         .find(id)
-        .filter(comments::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(comments::deleted_at.is_null())
         .first::<Comment>(conn)
         .await
         .optional()
@@ -16,7 +16,7 @@ pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Comment>, Erro
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Comment>, Error> {
     comments::table
-        .filter(comments::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(comments::deleted_at.is_null())
         .order_by(comments::id.desc())
         .load::<Comment>(conn)
         .await

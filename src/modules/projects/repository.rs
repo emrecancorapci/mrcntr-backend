@@ -20,7 +20,7 @@ pub async fn one(
 ) -> Result<Option<(Project, Option<ProjectStatus>, Option<ProjectType>, Option<ProjectAiUsage>)>, Error> {
     projects::table
         .find(project_id)
-        .filter(projects::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(projects::deleted_at.is_null())
         .left_join(schema::project_statuses::table)
         .left_join(schema::project_types::table)
         .left_join(schema::project_ai_usages::table)
@@ -31,7 +31,7 @@ pub async fn one(
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Project>, Error> {
     projects::table
-        .filter(projects::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(projects::deleted_at.is_null())
         .order_by(projects::id.desc())
         .load::<Project>(conn)
         .await

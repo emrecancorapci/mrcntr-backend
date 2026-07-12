@@ -11,7 +11,7 @@ use diesel_async::RunQueryDsl;
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectLink>, Error> {
     project_links::table
         .find(id)
-        .filter(project_links::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(project_links::deleted_at.is_null())
         .first::<ProjectLink>(conn)
         .await
         .optional()
@@ -19,7 +19,7 @@ pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<ProjectLink>, 
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<ProjectLink>, Error> {
     project_links::table
-        .filter(project_links::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(project_links::deleted_at.is_null())
         .order_by(project_links::id.desc())
         .load::<ProjectLink>(conn)
         .await
@@ -30,7 +30,7 @@ pub async fn many_by_project(
     project: &Project,
 ) -> Result<Vec<ProjectLink>, Error> {
     ProjectLink::belonging_to(&project)
-        .filter(project_links::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(project_links::deleted_at.is_null())
         .load::<ProjectLink>(conn)
         .await
 }

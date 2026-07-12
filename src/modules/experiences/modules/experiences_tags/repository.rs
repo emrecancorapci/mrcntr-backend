@@ -55,19 +55,19 @@ pub async fn tags_by_experiences(
 //     experiences_tags::table.get_results(conn)
 // }
 
-pub async fn insert_one(
-    conn: &mut PooledConn,
-    experience: ExperienceTag,
-) -> Result<ExperienceTag, Error> {
-    diesel::insert_into(experiences_tags::table)
-        .values(&experience)
-        .on_conflict((experiences_tags::experience_id, experiences_tags::tag_id))
-        .do_update()
-        .set(experiences_tags::sort_order.eq(excluded(experiences_tags::sort_order)))
-        .returning(ExperienceTag::as_returning())
-        .get_result(conn)
-        .await
-}
+// pub async fn insert_one(
+//     conn: &mut PooledConn,
+//     experience: ExperienceTag,
+// ) -> Result<ExperienceTag, Error> {
+//     diesel::insert_into(experiences_tags::table)
+//         .values(&experience)
+//         .on_conflict((experiences_tags::experience_id, experiences_tags::tag_id))
+//         .do_update()
+//         .set(experiences_tags::sort_order.eq(excluded(experiences_tags::sort_order)))
+//         .returning(ExperienceTag::as_returning())
+//         .get_result(conn)
+//         .await
+// }
 
 pub async fn insert_many(
     conn: &mut PooledConn,

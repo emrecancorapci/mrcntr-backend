@@ -9,7 +9,7 @@ use uuid::Uuid;
 pub async fn one(conn: &mut PooledConn, uuid: Uuid) -> Result<Option<User>, Error> {
     users::table
         .find(uuid)
-        .filter(users::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(users::deleted_at.is_null())
         .first::<User>(conn)
         .await
         .optional()
@@ -17,7 +17,7 @@ pub async fn one(conn: &mut PooledConn, uuid: Uuid) -> Result<Option<User>, Erro
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<User>, Error> {
     users::table
-        .filter(users::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(users::deleted_at.is_null())
         .order_by(users::created_at.desc())
         .load::<User>(conn)
         .await

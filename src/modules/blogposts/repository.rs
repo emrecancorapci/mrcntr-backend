@@ -8,7 +8,7 @@ use diesel_async::RunQueryDsl;
 pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Error> {
     blogposts::table
         .find(id)
-        .filter(blogposts::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(blogposts::deleted_at.is_null())
         .first::<Blogpost>(conn)
         .await
         .optional()
@@ -16,7 +16,7 @@ pub async fn one(conn: &mut PooledConn, id: i32) -> Result<Option<Blogpost>, Err
 
 pub async fn many(conn: &mut PooledConn) -> Result<Vec<Blogpost>, Error> {
     blogposts::table
-        .filter(blogposts::deleted_at.eq(Option::<DateTime<Utc>>::None))
+        .filter(blogposts::deleted_at.is_null())
         .order_by(blogposts::id.desc())
         .load::<Blogpost>(conn)
         .await
