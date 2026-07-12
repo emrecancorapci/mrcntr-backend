@@ -1,6 +1,6 @@
 use actix_limitation::RateLimiter;
 use actix_web::{App, HttpServer, middleware::Logger, web};
-use mrcntr::{ApiDoc, AppDatabase, AppLimiter};
+use mrcntr::{ApiDoc, AppDatabase, AppLimiter, app_cors};
 use utoipa::OpenApi;
 use utoipa_actix_web::AppExt;
 use utoipa_swagger_ui::SwaggerUi;
@@ -28,14 +28,13 @@ async fn main() -> std::io::Result<()> {
                     .wrap(Logger::default())
                     .app_data(shared_db_pool.clone())
                     .app_data(shared_redis_pool.clone())
+                    .wrap(app_cors())
             })
             .service(
                 utoipa_actix_web::scope("/api")
                     .service(utoipa_actix_web::scope("/v1").configure(mrcntr::router::routes)),
             )
-            .openapi_service(|api| {
-                SwaggerUi::new("/docs/{_:.*}").url("/docs/openapi.json", api)
-            })
+            .openapi_service(|api| SwaggerUi::new("/docs/{_:.*}").url("/docs/openapi.json", api))
             .into_app()
     };
 
