@@ -34,7 +34,7 @@
 - [X] Role based authentication
 - [X] Async diesel implementation
 - [X] Error handler overhaul
-- [ ] Complete basic module implementation
+- [X] Complete basic module implementation
   - [X] Auth
     - [X] Redis token storage system (limited to one token)
   - [X] Categories
@@ -42,8 +42,8 @@
   - [X] Projects
   - [X] Users
   - [X] Tags
-- [ ] Documenting (OAuth)
-- [ ] CORS Settings
+- [X] Documenting (OAuth)
+- [X] CORS Settings
 
 #### Before Release
 
@@ -51,7 +51,7 @@
 
 ### v1.1 (Rate Limiter Update)
 
-- Custom rate limiter
+- [ ] Custom rate limiter
 
 ### v1.2 (Blogpost Update)
 
