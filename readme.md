@@ -1,77 +1,60 @@
 # Backend App for [mrcn.tr](https://mrcn.tr)
 
-## Prerequisites
+## Development
 
-- [rust](https://rust-lang.org/) (rustc, rustup, etc.)
+### Prerequisites
+
+- [Rust](https://rust-lang.org/) (rustc, rustup, etc.)
 - [diesel-cli](https://crates.io/crates/diesel_cli)
-- [just](https://just.systems/man/en/) (optional)
+- [just](https://just.systems/man/en/) (optional, but highly recommended)
 - [watchexec](https://watchexec.github.io/) (optional)
 
-### For Linux
+#### For Linux
 
-- [wild](https://github.com/wild-linker/wild) (linker for linux)
-- [sccache](https://github.com/mozilla/sccache) (compiler caching tool)
+To optimize the build process, an external linker and a compiler caching tool are used. You can disable them by deleting `/.cargo/config.toml`.
 
-### For macOS
+- [wild](https://github.com/wild-linker/wild) (Linker for Linux)
+- [sccache](https://github.com/mozilla/sccache) (Compiler caching tool)
 
-Mac users should update their bash via `brew install bash` command to use `just new-mod`.
+#### For macOS
 
-## Just Commands
+Mac users must update Bash via `brew install bash` to use the `just new-mod` script.
 
-### Development
+> 💡 *The default macOS Bash (v3) lacks modern features (like associative arrays) used in the automation scripts.*
 
-Runs the project with hot-reloading. Uses `watchexec`.
+---
 
-```bash
-just dev
-```
+### Just Commands
 
-Creates migration files for `TABLE_NAME`. Alias for `diesel migration generate create_{TABLE_NAME}`.
+| Command | Description |
+| :--- | :--- |
+| `just dev` | Runs the project with hot-reloading (requires `watchexec`). |
+| `just new-mig TABLE_NAME` | Generates a new migration file. Alias for `diesel migration generate create_{TABLE_NAME}`. |
+| `just sync` | Runs all pending migrations. Alias for `diesel migration run`. |
+| `just new-mod MODULE_NAME` | Scaffolds a new module directory with its handler and resolver files. |
+| `just db setup` | Initializes and sets up the database from scratch. |
+| `just db reset` | Resets the database and runs `diesel database setup`. |
 
-```bash
-just new-mig TABLE_NAME
-```
-
-Runs all pending migrations. Alias for `diesel migration run`
-
-```bash
-just sync
-```
-
-Creates a new module in `modules` folder with its handler and resolver function. Only models need to be filled.
-
-```bash
-just new-mod MODULE_NAME
-```
-
-### Database
-
-Resets the database and then runs `diesel database setup`.
-
-```bash
-just db reset
-```
-
-Setups the database.
-
-```bash
-just db setup
-```
+---
 
 ## Project Structure
 
-I decided to follow a monolith modular structure.
-
-```textfile
+```text
 /src
   /modules
-    /module_name
+    /module
+      /sub_module     # Same structure as module
       handlers.rs     # Endpoint implementations 
       models.rs       # Models and DTOs
-      repository.rs   # ORM implementations (normally i won't use this but i also want to try SeaORM)
-    module_name.rs    # Holds imports and exports of the module
-    ...
-  lib.rs              # Holds all imports and exports instead of using main.rs for it
-  main.rs             # Where the magic happens
-  router.rs           # Just the router
+      repository.rs   # ORM implementations
+    module.rs         # Module entry point (imports/exports)
+  lib.rs              # App root layout
+  main.rs             # Application entry point
+  router.rs           # Routing definitions
 ```
+
+## Additional Resources & Documentation
+
+- [OpenAPI Trait](https://docs.rs/utoipa/latest/utoipa/derive.OpenApi.html)
+- [ToSchema Trait (For Models)](https://docs.rs/utoipa/latest/utoipa/derive.ToSchema.html)
+- [path Attribute Macro (For Handlers)](https://docs.rs/utoipa/latest/utoipa/attr.path.html)
