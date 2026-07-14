@@ -1,27 +1,5 @@
 # TODO
 
-## Module checks
-
-### Repository
-
-- [ ] Repository methods does one thing
-
-### Handlers
-
-- [ ] Response Handling
-  - [ ] All handlers returns Item Response
-
-### Models
-
-- [ ] New Item Request Handling
-  - [ ] Doesn't have id/created_at/updated_at
-  - [ ] Has validation
-- [ ] Update Item Request Handling
-  - [ ] Optional deleted_at and necessary updated_at fields in DbModel
-  - [ ] Optional deleted_at and no updated_at fields in DbModel
-  - [ ] Has validation same as insert
-- [ ] Implement soft delete
-
 ## Versions
 
 ### v1
