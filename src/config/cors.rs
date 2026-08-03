@@ -1,6 +1,7 @@
 use std::env;
 
 use actix_cors::Cors;
+use actix_web::http::header;
 
 pub fn app_cors() -> Cors {
     let allowed_str = env::var("ALLOWED_ORIGINS").expect("ALLOWED_ORIGINS must be set");
@@ -19,6 +20,11 @@ pub fn app_cors() -> Cors {
                 false
             }
         })
-        .allow_any_method()
-        .allow_any_header()
+        .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
+        .allowed_headers(vec![
+            header::AUTHORIZATION,
+            header::ACCEPT,
+            header::CONTENT_TYPE,
+        ])
+        .supports_credentials()
 }
